@@ -1,4 +1,4 @@
-# 📺 TV Episode Tracker
+# 📺 TVQ a TV Episode Tracker
 
 A web-based application to track your favorite TV series and movies using the TMDB API.
 
