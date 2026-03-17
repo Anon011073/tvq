@@ -1,0 +1,49 @@
+[Mon Mar 16 03:34:25 2026] PHP 8.3.6 Development Server (http://localhost:8000) started
+[Mon Mar 16 03:34:31 2026] [::1]:59826 Accepted
+[Mon Mar 16 03:34:31 2026] [::1]:59826 [200]: GET /login.php
+[Mon Mar 16 03:34:31 2026] [::1]:59826 Closing
+[Mon Mar 16 03:34:31 2026] [::1]:59842 Accepted
+[Mon Mar 16 03:34:31 2026] [::1]:59842 [200]: GET /css/style.css
+[Mon Mar 16 03:34:31 2026] [::1]:59842 Closing
+[Mon Mar 16 03:34:32 2026] [::1]:59852 Accepted
+[Mon Mar 16 03:34:32 2026] [::1]:59852 [200]: POST /login.php
+[Mon Mar 16 03:34:32 2026] [::1]:59852 Closing
+[Mon Mar 16 03:34:32 2026] [::1]:59856 Accepted
+[Mon Mar 16 03:34:32 2026] [::1]:59856 [200]: GET /css/style.css
+[Mon Mar 16 03:34:32 2026] [::1]:59856 Closing
+[Mon Mar 16 03:35:38 2026] [::1]:59592 Accepted
+[Mon Mar 16 03:35:38 2026] [::1]:59592 [200]: GET /setup.php
+[Mon Mar 16 03:35:38 2026] [::1]:59592 Closing
+[Mon Mar 16 03:35:39 2026] [::1]:59596 Accepted
+[Mon Mar 16 03:35:39 2026] [::1]:59596 [200]: GET /login.php
+[Mon Mar 16 03:35:39 2026] [::1]:59596 Closing
+[Mon Mar 16 03:35:39 2026] [::1]:59604 Accepted
+[Mon Mar 16 03:35:39 2026] [::1]:59604 [200]: GET /css/style.css
+[Mon Mar 16 03:35:39 2026] [::1]:59604 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59618 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59618 [302]: POST /login.php
+[Mon Mar 16 03:35:40 2026] [::1]:59618 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59634 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59634 [200]: GET /index.php
+[Mon Mar 16 03:35:40 2026] [::1]:59634 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59640 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59656 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59658 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59672 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59640 [200]: GET /css/style.css
+[Mon Mar 16 03:35:40 2026] [::1]:59656 [200]: GET /js/utils.js
+[Mon Mar 16 03:35:40 2026] [::1]:59658 [200]: GET /js/theme.js
+[Mon Mar 16 03:35:40 2026] [::1]:59640 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59656 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59658 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59672 [200]: GET /js/main.js
+[Mon Mar 16 03:35:40 2026] [::1]:59672 Closing
+[Mon Mar 16 03:35:40 2026] [::1]:59680 Accepted
+[Mon Mar 16 03:35:40 2026] [::1]:59680 [200]: GET /api/tmdb.php?endpoint=/discover/tv&page=1&vote_count.gte=50&first_air_date.lte=2026-03-16&sort_by=vote_average.desc&with_original_language=en
+[Mon Mar 16 03:35:40 2026] [::1]:59680 Closing
+[Mon Mar 16 03:35:41 2026] [::1]:59682 Accepted
+[Mon Mar 16 03:35:41 2026] [::1]:59682 [200]: GET /api/tmdb.php?endpoint=/discover/tv&page=1&vote_count.gte=50&first_air_date.lte=2026-03-16&sort_by=vote_average.desc&with_original_language=en&with_origin_country=US
+[Mon Mar 16 03:35:41 2026] [::1]:59682 Closing
+[Mon Mar 16 03:35:42 2026] [::1]:59692 Accepted
+[Mon Mar 16 03:35:42 2026] [::1]:59692 [200]: GET /api/tmdb.php?endpoint=/discover/tv&page=1&vote_count.gte=50&first_air_date.lte=2026-03-16&sort_by=vote_average.desc&with_original_language=en&with_genres=16&with_origin_country=US
+[Mon Mar 16 03:35:42 2026] [::1]:59692 Closing
