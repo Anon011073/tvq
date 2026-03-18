@@ -6,31 +6,6 @@ let currentPage = 1;
 let currentGenre = '';
 let currentSort = 'popularity.desc'; // Default = Popularity
 
-// Restored + Updated renderShows function (horizontal sections)
-function renderShows(shows, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-
-  shows.slice(0, 24).forEach(show => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <img src="https://image.tmdb.org/t/p/w200${show.poster_path}" alt="${show.name}" />
-      <h3>${show.name}</h3>
-      <p>⭐ ${show.vote_average}</p>
-    `;
-    div.addEventListener('click', () => {
-      window.location.href = `show.php?id=${show.id}`;
-    });
-    container.appendChild(div);
-  });
-
-  if (typeof addScrollArrows === 'function') {
-    addScrollArrows(container);
-  }
-}
-
 // Unified Grid Rendering
 function renderGrid(shows, containerId) {
   const container = document.getElementById(containerId);
@@ -55,7 +30,7 @@ function renderGrid(shows, containerId) {
 function loadMainGrid(page = 1, shouldScroll = true) {
   currentPage = page;
 
-  let endpoint = `/discover/tv&page=${page}&sort_by=${currentSort}`;
+  let endpoint = `/discover/tv?page=${page}&sort_by=${currentSort}`;
 
   // If sorting by rating, require votes
   if (currentSort === 'vote_average.desc') {
@@ -99,7 +74,7 @@ function loadMainGrid(page = 1, shouldScroll = true) {
       endpoint += `&air_date.gte=${dateStr}`;
   }
 
-  fetch(`api/tmdb.php?endpoint=${endpoint}`)
+  fetch(`api/tmdb.php?endpoint=${encodeURIComponent(endpoint)}`)
     .then(res => res.json())
     .then(data => {
       renderGrid(data.results || [], 'mainGrid');
@@ -148,38 +123,14 @@ function searchShows() {
     return;
   }
 
-  fetch(`api/tmdb.php?endpoint=/search/tv&query=${encodeURIComponent(query)}`)
+  fetch(`api/tmdb.php?endpoint=${encodeURIComponent('/search/tv?query=' + query)}`)
     .then(res => res.json())
     .then(data => {
       searchSection.style.display = 'block';
       mainContent.style.display = 'none';
-      renderShows(data.results || [], 'searchResults');
+      renderGrid(data.results || [], 'searchResults');
     })
     .catch(err => console.error('Search error:', err));
-}
-
-function renderMovies(movies, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-
-  movies.slice(0, 12).forEach(movie => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title}" />
-      <h3>${movie.title}</h3>
-      <p>📅 ${movie.release_date || 'Unknown'}</p>
-    `;
-    div.addEventListener('click', () => {
-      window.location.href = `movie.php?id=${movie.id}`;
-    });
-    container.appendChild(div);
-  });
-
-  if (typeof addScrollArrows === 'function') {
-    addScrollArrows(container);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -275,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
 /**
  * Backup & Restore Logic
  */
@@ -321,16 +273,12 @@ function importData() {
             const userId = window.CURRENT_USER_ID || 'guest';
             const prefix = `user_${userId}_`;
 
-            // Basic validation: check if keys match current user or are at least somewhat valid
             let count = 0;
             for (const key in data) {
-                // If we want to allow cross-user import, we could strip the old prefix and add new
-                // For now, let's just import them as is if they match the user prefix
                 if (key.startsWith(prefix)) {
                     localStorage.setItem(key, data[key]);
                     count++;
                 } else if (key.startsWith('user_')) {
-                    // Remap to current user
                     const actualKey = key.split('_').slice(2).join('_');
                     localStorage.setItem(prefix + actualKey, data[key]);
                     count++;

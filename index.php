@@ -1,173 +1,99 @@
-<?php require_once 'auth_check.php'; ?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>TV Tracker - Home</title>
- 
-  <link rel="stylesheet" href="css/style.css?v=2">
-  <script>
-    window.CURRENT_USER_ID = <?php echo json_encode($_SESSION['user_id']); ?>;
-  </script>
-</head>
-<body id="top">
-  <nav class="top-nav">
-    <div class="nav-brand">
-      <h1>📺 TV Tracker</h1>
-    </div>
-    <div class="nav-links">
-      <a href="index.php" class="active">🏠 Home</a>
-      <a href="calendar.php">📅 Calendar</a>
-      <a href="favourites.php">⭐ Favourites</a>
-      <a href="watchlist.php">📋 Watchlist</a>
-      <a href="movies.php">🎬 Movies</a>
-      <a href="profile.php">👤 Profile</a>
-      <a href="logout.php">🚪 Logout</a>
-      <button id="themeToggle" class="theme-toggle">🌙 Toggle Theme</button>
-    </div>
-  </nav>
+<?php include 'header.php'; ?>
 
-  <div class="main-layout">
-    <aside class="sidebar">
-      <div class="sidebar-section">
-      <h3>Sort By</h3>
-      <select id="sortBy" class="sidebar-select">
-        <option value="popularity.desc">Popularity</option>
-        <option value="first_air_date.desc">Release Date</option>
-      </select>
+<section id="searchSection" style="display: none;">
+    <h2>Search Results</h2>
+    <div id="searchResults" class="horizontal-scroll"></div>
+</section>
+
+<section id="mainContent">
+    <div class="top-row">
+        <h2 id="gridTitle">Popular Shows</h2>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search for a show..." />
+        </div>
     </div>
 
-    <div class="sidebar-section">
-      <h3>Filters</h3>
-      <div class="filter-item">
-        <label for="maxAgeYears" style="display: block; font-size: 0.9rem; color: #a0a0a0; margin-bottom: 5px;">
-          Released since: <span id="maxAgeYearsValue">1920</span>s
-        </label>
-        <input type="range" id="maxAgeYears" class="sidebar-slider" min="1920" max="2020" step="10" value="1920">
-      </div>
-      <div class="filter-item" style="margin-top: 15px;">
-        <label for="maxShowAgeDays" style="display: block; font-size: 0.9rem; color: #a0a0a0; margin-bottom: 5px;">
-          Max. show age: <span id="maxShowAgeDaysValue">0</span> days
-        </label>
-        <input type="range" id="maxShowAgeDays" class="sidebar-slider" min="0" max="90" step="1" value="0">
-      </div>
+    <div class="layout-container">
+        <!-- Filters Sidebar -->
+        <aside class="filters-sidebar">
+            <div class="filter-group">
+                <h3>Sort By</h3>
+                <select id="sortBy">
+                    <option value="popularity.desc" selected>Popularity</option>
+                    <option value="first_air_date.desc">Release Date</option>
+                    <option value="vote_average.desc">Rating</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <h3>Released since</h3>
+                <input type="range" id="maxAgeYears" min="1920" max="2020" step="10" value="1920">
+                <span id="maxAgeYearsValue">1920</span>
+            </div>
+
+            <div class="filter-group">
+                <h3>Max show age (days)</h3>
+                <input type="range" id="maxShowAgeDays" min="0" max="90" value="0">
+                <span id="maxShowAgeDaysValue">0</span>
+            </div>
+
+            <div class="filter-group">
+                <h3>Options</h3>
+                <label>
+                    <input type="checkbox" id="englishOnly" checked> English Only
+                </label>
+            </div>
+
+            <div class="filter-group">
+                <h3>Country</h3>
+                <label><input type="checkbox" class="country-opt" value="US" checked> 🇺🇸 USA</label>
+                <label><input type="checkbox" class="country-opt" value="GB"> 🇬🇧 UK</label>
+                <label><input type="checkbox" class="country-opt" value="CA"> 🇨🇦 Canada</label>
+                <label><input type="checkbox" class="country-opt" value="SE"> 🇸🇪 Sweden</label>
+                <label><input type="checkbox" class="country-opt" value="NO"> 🇳🇴 Norway</label>
+                <label><input type="checkbox" class="country-opt" value="FI"> 🇫🇮 Finland</label>
+                <label><input type="checkbox" class="country-opt" value="IS"> 🇮🇸 Iceland</label>
+                <label><input type="checkbox" class="country-opt" value="DK"> 🇩🇰 Denmark</label>
+                <label><input type="checkbox" class="country-opt" value="DE"> 🇩🇪 Germany</label>
+            </div>
+
+            <div class="filter-group">
+                <h3>Genre</h3>
+                <div id="genreList">
+                    <div class="genre-item active" data-id="">All</div>
+                    <div class="genre-item" data-id="10759">Action & Adventure</div>
+                    <div class="genre-item" data-id="16">Animation</div>
+                    <div class="genre-item" data-id="35">Comedy</div>
+                    <div class="genre-item" data-id="80">Crime</div>
+                    <div class="genre-item" data-id="99">Documentary</div>
+                    <div class="genre-item" data-id="18">Drama</div>
+                    <div class="genre-item" data-id="10751">Family</div>
+                    <div class="genre-item" data-id="10762">Kids</div>
+                    <div class="genre-item" data-id="9648">Mystery</div>
+                    <div class="genre-item" data-id="10763">News</div>
+                    <div class="genre-item" data-id="10764">Reality</div>
+                    <div class="genre-item" data-id="10765">Sci-Fi & Fantasy</div>
+                    <div class="genre-item" data-id="10766">Soap</div>
+                    <div class="genre-item" data-id="10767">Talk</div>
+                    <div class="genre-item" data-id="10768">War & Politics</div>
+                    <div class="genre-item" data-id="37">Western</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Show Grid -->
+        <div class="grid-content">
+            <div id="mainGrid" class="main-grid">
+                <!-- Data from JS -->
+            </div>
+            <div id="pagination" class="pagination">
+                <button id="prevPage">Prev</button>
+                <span id="pageInfo">Page 1 of ?</span>
+                <div id="pageNumbers"></div>
+                <button id="nextPage">Next</button>
+            </div>
+        </div>
     </div>
+</section>
 
-    <div class="sidebar-section">
-      <h3>Options</h3>
-      <div style="margin-bottom: 10px;">
-        <input type="checkbox" id="englishOnly" checked>
-        <label for="englishOnly" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">Only English Language</label>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <h3>Countries</h3>
-      <div class="country-filters" style="display: flex; flex-direction: column; gap: 8px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryUS" value="US" checked>
-          <label for="countryUS" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇺🇸 USA</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryUK" value="GB">
-          <label for="countryUK" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇬🇧 UK</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryCA" value="CA">
-          <label for="countryCA" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇨🇦 Canada</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countrySE" value="SE">
-          <label for="countrySE" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇸🇪 Sweden</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryNO" value="NO">
-          <label for="countryNO" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇳🇴 Norway</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryFI" value="FI">
-          <label for="countryFI" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇫🇮 Finland</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryIS" value="IS">
-          <label for="countryIS" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇮🇸 Iceland</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryDK" value="DK">
-          <label for="countryDK" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇩🇰 Denmark</label>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryDE" value="DE">
-          <label for="countryDE" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇩🇪 Germany</label>
-        </div>
-      </div>
-    </div>
-
-    <div class="sidebar-section">
-      <h3>Genres</h3>
-      <div class="genre-list" id="genreFilters">
-        <div class="genre-item active" data-id="">All Genres</div>
-        <div class="genre-item" data-id="10759">Action & Adventure</div>
-        <div class="genre-item" data-id="16">Animation</div>
-        <div class="genre-item" data-id="35">Comedy</div>
-        <div class="genre-item" data-id="80">Crime</div>
-        <div class="genre-item" data-id="99">Documentary</div>
-        <div class="genre-item" data-id="18">Drama</div>
-        <div class="genre-item" data-id="10751">Family</div>
-        <div class="genre-item" data-id="10762">Kids</div>
-        <div class="genre-item" data-id="9648">Mystery</div>
-        <div class="genre-item" data-id="10763">News</div>
-        <div class="genre-item" data-id="10764">Reality</div>
-        <div class="genre-item" data-id="10765">Sci-Fi & Fantasy</div>
-        <div class="genre-item" data-id="10766">Soap</div>
-        <div class="genre-item" data-id="10767">Talk</div>
-        <div class="genre-item" data-id="10768">War & Politics</div>
-        <div class="genre-item" data-id="37">Western</div>
-      </div>
-    </div>
-  </aside>
-
-  <main class="content-area">
-    <header class="content-header">
-      <input type="text" id="searchInput" placeholder="Search shows..." />
-    </header>
-
-    <section id="searchSection" style="display: none;">
-      <h2>🔍 Search Results</h2>
-      <div id="searchResults" class="show-grid"></div>
-    </section>
-
-    <section id="mainContent">
-      <h2 id="gridTitle">Popular Shows</h2>
-      <div id="mainGrid" class="main-grid"></div>
-      <div class="pagination">
-        <button id="prevPage" class="btn" disabled>Previous</button>
-        <div class="page-numbers" id="pageNumbers"></div>
-        <button id="nextPage" class="btn">Next</button>
-        <span id="pageInfo">Page 1</span>
-      </div>
-    </section>
-
-    <section class="backup-restore">
-      <h3>🧩 Backup & Restore</h3>
-      <div class="backup-btns">
-        <button onclick="exportData()" class="btn btn-secondary">⬇️ Export</button>
-        <input type="file" id="importFile" accept=".json" />
-        <button onclick="importData()" class="btn btn-secondary">⬆️ Import</button>
-      </div>
-    </section>
-  </main>
-</div>
-  <script src="js/utils.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/main.js"></script>
-<footer class="site-footer">
-  <p>© 2025 TV Tracker — Built with ❤️ for your watchlist.</p>
-  <p>
-    <a href="calendar.php">📅 Episode Calendar</a> |
-    <a href="index.php">🏠 Home</a> |
-    <a href="movies.php">🎬 Movies</a>
-  </p>
-</footer>
-<a href="#top" class="back-to-top">Back to Top</a>
-</body>
-</html>
+<?php include 'footer.php'; ?>

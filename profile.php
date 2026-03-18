@@ -1,141 +1,93 @@
-<?php require_once 'auth_check.php'; ?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>TV Tracker - Profile</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <script>
-    window.CURRENT_USER_ID = <?php echo json_encode($_SESSION['user_id']); ?>;
-  </script>
-</head>
-<body id="top">
-  <nav class="top-nav">
-    <div class="nav-brand">
-      <h1>📺 TV Tracker</h1>
-    </div>
-    <div class="nav-links">
-      <a href="index.php">🏠 Home</a>
-      <a href="calendar.php">📅 Calendar</a>
-      <a href="favourites.php">⭐ Favourites</a>
-      <a href="watchlist.php">📋 Watchlist</a>
-      <a href="movies.php">🎬 Movies</a>
-      <a href="profile.php" class="active">👤 Profile</a>
-      <a href="logout.php">🚪 Logout</a>
-      <button id="themeToggle" class="theme-toggle">🌙 Toggle Theme</button>
-    </div>
-  </nav>
+<?php
+include 'header.php';
+if (!$is_logged_in) {
+    header("Location: login.php");
+    exit;
+}
 
-  <main class="content-area">
-    <h1>👤 Your Profile</h1>
-    <section id="dataSection" style="margin-bottom: 40px; background: #1a1a1a; padding: 20px; border-radius: 10px;">
-      <h2>💾 Backup & Restore</h2>
-      <p style="color: #a0a0a0; margin-bottom: 15px;">Save your local settings and tracked shows to a file or restore them from a previous backup.</p>
-      <div style="display: flex; gap: 15px; align-items: center;">
-        <button onclick="exportData()" class="btn btn-primary">📤 Export Data</button>
-        <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #333; padding-left: 15px;">
-          <input type="file" id="importFile" accept=".json" style="display: none;">
-          <button onclick="document.getElementById('importFile').click()" class="btn btn-secondary">📁 Select Backup</button>
-          <button onclick="importData()" class="btn">📥 Import Data</button>
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'] ?? 'User';
+?>
+
+<div class="profile-container">
+    <h2>User Profile: <?php echo htmlspecialchars($username); ?></h2>
+
+    <section class="profile-section">
+        <h3>Account Options</h3>
+        <button onclick="window.location.href='logout.php'">Logout</button>
+    </section>
+
+    <section class="profile-section">
+        <h3>Backup & Restore</h3>
+        <p>Export your favourites and watchlist to a JSON file, or import them back.</p>
+        <button onclick="exportData()">Export My Data</button>
+        <div style="margin-top: 10px;">
+            <input type="file" id="importFile" accept=".json" />
+            <button onclick="importData()">Import My Data</button>
         </div>
-      </div>
     </section>
 
-    <section id="trackedSection">
-      <h2>🎯 Shows I Watch</h2>
-      <div id="trackedShowsGrid" class="main-grid"></div>
-      
-      <div class="pagination" id="profilePagination">
-        <button id="prevProfilePage" class="btn">Previous</button>
-        <div class="page-numbers" id="profilePageNumbers"></div>
-        <button id="nextProfilePage" class="btn">Next</button>
-        <span id="profilePageInfo"></span>
-      </div>
+    <?php if ($is_admin): ?>
+    <section class="admin-section" id="adminControls">
+        <hr>
+        <h2>Admin Settings</h2>
+        
+        <div class="form-group">
+            <label>Site Title:</label>
+            <input type="text" id="adminSiteTitle" value="<?php echo htmlspecialchars($site_title); ?>">
+        </div>
+
+        <div class="form-group">
+            <label>Theme:</label>
+            <select id="adminTheme">
+                <option value="default" <?php if ($theme == 'default') echo 'selected'; ?>>Default (Dark)</option>
+                <option value="ocean" <?php if ($theme == 'ocean') echo 'selected'; ?>>Ocean Blue</option>
+                <option value="forest" <?php if ($theme == 'forest') echo 'selected'; ?>>Forest Green</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Plugins:</label>
+            <label>
+                <input type="checkbox" id="pluginWatchToggle" <?php if ($plugin_watch == '1') echo 'checked'; ?>>
+                Enable "Watch" Feature
+            </label>
+        </div>
+
+        <button id="saveAdminSettings">Save Site Settings</button>
+        <p id="adminStatus"></p>
     </section>
-  </main>
+    <script>
+    document.getElementById('saveAdminSettings').addEventListener('click', () => {
+        const title = document.getElementById('adminSiteTitle').value;
+        const theme = document.getElementById('adminTheme').value;
+        const watch = document.getElementById('pluginWatchToggle').checked ? '1' : '0';
+        const status = document.getElementById('adminStatus');
 
-  <script src="js/utils.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/main.js"></script>
-  <script>
-    let profilePage = 1;
-    const itemsPerPage = 18; // 3 rows of 6 cards roughly
+        status.textContent = "Saving...";
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadProfileTrackedShows(1);
-        
-        document.getElementById('prevProfilePage').onclick = () => {
-            if (profilePage > 1) loadProfileTrackedShows(profilePage - 1);
-        };
-        document.getElementById('nextProfilePage').onclick = () => {
-            loadProfileTrackedShows(profilePage + 1);
-        };
-    });
-
-    async function loadProfileTrackedShows(page) {
-        profilePage = page;
-        const tracked = JSON.parse(localStorage.getItem(getUserKey('favs')) || '[]');
-        const container = document.getElementById('trackedShowsGrid');
-        
-        if (tracked.length === 0) {
-            container.innerHTML = '<p>You are not tracking any shows yet. Go to Home or Search to add some!</p>';
-            document.getElementById('profilePagination').style.display = 'none';
-            return;
-        }
-
-        const totalPages = Math.ceil(tracked.length / itemsPerPage);
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const pageItems = tracked.slice(start, end);
-
-        container.innerHTML = 'Loading tracked shows...';
-
-        const promises = pageItems.map(show => 
-            fetch(`api/tmdb.php?endpoint=/tv/${show.id}`).then(res => res.json())
-        );
-
-        const results = await Promise.all(promises);
-        container.innerHTML = '';
-        results.forEach(data => {
-            if (data.id) {
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.innerHTML = `
-                  <img src="https://image.tmdb.org/t/p/w200${data.poster_path}" alt="${data.name}" onerror="this.src='https://placehold.co/200x300?text=No+Image'"/>
-                  <h3>${data.name}</h3>
-                  <p>⭐ ${data.vote_average}</p>
-                `;
-                div.addEventListener('click', () => {
-                  window.location.href = `show.php?id=${data.id}`;
-                });
-                container.appendChild(div);
+        fetch('api/admin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                site_title: title,
+                theme: theme,
+                plugin_watch: watch
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                status.textContent = "Settings saved! Refreshing...";
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                status.textContent = "Error: " + (data.error || "Unknown error");
             }
         });
+    });
+    </script>
+    <?php endif; ?>
+</div>
 
-        updateProfilePagination(page, totalPages);
-    }
-
-    function updateProfilePagination(current, total) {
-        const info = document.getElementById('profilePageInfo');
-        info.textContent = `Page ${current} of ${total}`;
-        
-        document.getElementById('prevProfilePage').disabled = current <= 1;
-        document.getElementById('nextProfilePage').disabled = current >= total;
-
-        const numbers = document.getElementById('profilePageNumbers');
-        numbers.innerHTML = '';
-        
-        for (let i = 1; i <= total; i++) {
-            const btn = document.createElement('button');
-            btn.className = `page-num ${i === current ? 'active' : ''}`;
-            btn.textContent = i;
-            btn.onclick = () => loadProfileTrackedShows(i);
-            numbers.appendChild(btn);
-        }
-    }
-  </script>
-<footer class="site-footer">
-  <p>© 2025 TV Tracker — Built with ❤️ for your watchlist.</p>
-</footer>
-<a href="#top" class="back-to-top">Back to Top</a>
-</body>
-</html>
+<script src="js/main.js"></script>
+<?php include 'footer.php'; ?>
