@@ -100,6 +100,12 @@ body {
   cursor: pointer;
 }
 
+.sidebar-slider {
+  width: 100%;
+  accent-color: #ff5e57;
+  cursor: pointer;
+}
+
 .genre-list {
   display: flex;
   flex-direction: column;

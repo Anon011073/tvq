@@ -4,7 +4,7 @@
 
 let currentPage = 1;
 let currentGenre = '';
-let currentSort = 'popularity.desc'; // Default = Popular
+let currentSort = 'first_air_date.desc'; // Default = Release Date
 
 // Restored + Updated renderShows function (horizontal sections)
 function renderShows(shows, containerId) {
@@ -77,6 +77,27 @@ function loadMainGrid(page = 1, shouldScroll = true) {
   if (countryOpts.length > 0) {
       const countries = Array.from(countryOpts).map(opt => opt.value).join('|');
       endpoint += `&with_origin_country=${countries}`;
+  }
+
+  // Filters
+  const maxAgeYears = document.getElementById('maxAgeYears');
+  const maxShowAgeDays = document.getElementById('maxShowAgeDays');
+  const today = new Date();
+
+  if (maxAgeYears) {
+      const years = parseInt(maxAgeYears.value);
+      const date = new Date();
+      date.setFullYear(today.getFullYear() - years);
+      const dateStr = date.toISOString().split('T')[0];
+      endpoint += `&first_air_date.gte=${dateStr}`;
+  }
+
+  if (maxShowAgeDays) {
+      const days = parseInt(maxShowAgeDays.value);
+      const date = new Date();
+      date.setDate(today.getDate() - days);
+      const dateStr = date.toISOString().split('T')[0];
+      endpoint += `&air_date.gte=${dateStr}`;
   }
 
   fetch(`api/tmdb.php?endpoint=${endpoint}`)
@@ -192,6 +213,30 @@ document.addEventListener('DOMContentLoaded', () => {
           loadMainGrid(1, false);
       });
   });
+
+  // Sliders
+  const maxAgeYears = document.getElementById('maxAgeYears');
+  const maxAgeYearsValue = document.getElementById('maxAgeYearsValue');
+  if (maxAgeYears) {
+      maxAgeYears.addEventListener('input', (e) => {
+          if (maxAgeYearsValue) maxAgeYearsValue.textContent = e.target.value;
+      });
+      maxAgeYears.addEventListener('change', () => {
+          loadMainGrid(1, false);
+      });
+  }
+
+
+  const maxShowAgeDays = document.getElementById('maxShowAgeDays');
+  const maxShowAgeDaysValue = document.getElementById('maxShowAgeDaysValue');
+  if (maxShowAgeDays) {
+      maxShowAgeDays.addEventListener('input', (e) => {
+          if (maxShowAgeDaysValue) maxShowAgeDaysValue.textContent = e.target.value;
+      });
+      maxShowAgeDays.addEventListener('change', () => {
+          loadMainGrid(1, false);
+      });
+  }
 
   const genreItems = document.querySelectorAll('.genre-item');
   genreItems.forEach(item => {

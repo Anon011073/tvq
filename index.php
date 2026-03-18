@@ -31,9 +31,25 @@
       <div class="sidebar-section">
       <h3>Sort By</h3>
       <select id="sortBy" class="sidebar-select">
+        <option value="first_air_date.desc">Release Date</option>
         <option value="popularity.desc">Popularity</option>
-        <option value="first_air_date.desc">Latest Aired</option>
       </select>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Filters</h3>
+      <div class="filter-item">
+        <label for="maxAgeYears" style="display: block; font-size: 0.9rem; color: #a0a0a0; margin-bottom: 5px;">
+          Max Age: <span id="maxAgeYearsValue">100</span> years
+        </label>
+        <input type="range" id="maxAgeYears" class="sidebar-slider" min="0" max="100" step="10" value="100">
+      </div>
+      <div class="filter-item" style="margin-top: 15px;">
+        <label for="maxShowAgeDays" style="display: block; font-size: 0.9rem; color: #a0a0a0; margin-bottom: 5px;">
+          Max. show age: <span id="maxShowAgeDaysValue">90</span> days
+        </label>
+        <input type="range" id="maxShowAgeDays" class="sidebar-slider" min="0" max="90" step="1" value="90">
+      </div>
     </div>
 
     <div class="sidebar-section">
@@ -59,6 +75,30 @@
           <input type="checkbox" class="country-opt" id="countryCA" value="CA">
           <label for="countryCA" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇨🇦 Canada</label>
         </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="country-opt" id="countrySE" value="SE">
+          <label for="countrySE" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇸🇪 Sweden</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="country-opt" id="countryNO" value="NO">
+          <label for="countryNO" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇳🇴 Norway</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="country-opt" id="countryFI" value="FI">
+          <label for="countryFI" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇫🇮 Finland</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="country-opt" id="countryIS" value="IS">
+          <label for="countryIS" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇮🇸 Iceland</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="country-opt" id="countryDK" value="DK">
+          <label for="countryDK" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇩🇰 Denmark</label>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" class="country-opt" id="countryDE" value="DE">
+          <label for="countryDE" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇩🇪 Germany</label>
+        </div>
       </div>
     </div>
 
@@ -66,24 +106,21 @@
       <h3>Genres</h3>
       <div class="genre-list" id="genreFilters">
         <div class="genre-item active" data-id="">All Genres</div>
-        <div class="genre-item" data-id="10759">Action</div>
-        <div class="genre-item" data-id="10759">Adventure</div>
+        <div class="genre-item" data-id="10759">Action & Adventure</div>
         <div class="genre-item" data-id="16">Animation</div>
         <div class="genre-item" data-id="35">Comedy</div>
         <div class="genre-item" data-id="80">Crime</div>
         <div class="genre-item" data-id="99">Documentary</div>
         <div class="genre-item" data-id="18">Drama</div>
         <div class="genre-item" data-id="10751">Family</div>
-        <div class="genre-item" data-id="10765">Fantasy</div>
-        <div class="genre-item" data-id="36">History</div>
-        <div class="genre-item" data-id="27">Horror</div>
-        <div class="genre-item" data-id="10402">Music</div>
+        <div class="genre-item" data-id="10762">Kids</div>
         <div class="genre-item" data-id="9648">Mystery</div>
-        <div class="genre-item" data-id="10749">Romance</div>
-        <div class="genre-item" data-id="10765">Sci-Fi</div>
-        <div class="genre-item" data-id="10770">TV Movie</div>
-        <div class="genre-item" data-id="53">Thriller</div>
-        <div class="genre-item" data-id="10768">War</div>
+        <div class="genre-item" data-id="10763">News</div>
+        <div class="genre-item" data-id="10764">Reality</div>
+        <div class="genre-item" data-id="10765">Sci-Fi & Fantasy</div>
+        <div class="genre-item" data-id="10766">Soap</div>
+        <div class="genre-item" data-id="10767">Talk</div>
+        <div class="genre-item" data-id="10768">War & Politics</div>
         <div class="genre-item" data-id="37">Western</div>
       </div>
     </div>
