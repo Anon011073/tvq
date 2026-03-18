@@ -12,6 +12,11 @@ function renderGrid(shows, containerId) {
   if (!container) return;
   container.innerHTML = '';
 
+  if (!shows || shows.length === 0) {
+      container.innerHTML = '<p style="padding: 20px;">No shows found matching your criteria.</p>';
+      return;
+  }
+
   shows.forEach(show => {
     const div = document.createElement('div');
     div.className = 'card';
@@ -30,28 +35,30 @@ function renderGrid(shows, containerId) {
 function loadMainGrid(page = 1, shouldScroll = true) {
   currentPage = page;
 
-  let endpoint = `/discover/tv?page=${page}&sort_by=${currentSort}`;
+  let params = new URLSearchParams();
+  params.append('page', page);
+  params.append('sort_by', currentSort);
 
   // If sorting by rating, require votes
   if (currentSort === 'vote_average.desc') {
-    endpoint += `&vote_count.gte=200`;
+    params.append('vote_count.gte', '200');
   }
 
   // Language filter
   const englishOnly = document.getElementById('englishOnly');
   if (englishOnly && englishOnly.checked) {
-      endpoint += '&with_original_language=en';
+      params.append('with_original_language', 'en');
   }
 
   if (currentGenre) {
-    endpoint += `&with_genres=${currentGenre}`;
+    params.append('with_genres', currentGenre);
   }
 
   // Country filter
   const countryOpts = document.querySelectorAll('.country-opt:checked');
   if (countryOpts.length > 0) {
       const countries = Array.from(countryOpts).map(opt => opt.value).join('|');
-      endpoint += `&with_origin_country=${countries}`;
+      params.append('with_origin_country', countries);
   }
 
   // Filters
@@ -63,7 +70,7 @@ function loadMainGrid(page = 1, shouldScroll = true) {
       const year = parseInt(maxAgeYears.value);
       // Filter for shows released since the start of the selected decade
       const dateStr = `${year}-01-01`;
-      endpoint += `&first_air_date.gte=${dateStr}`;
+      params.append('first_air_date.gte', dateStr);
   }
 
   if (maxShowAgeDays && parseInt(maxShowAgeDays.value) > 0) {
@@ -71,20 +78,27 @@ function loadMainGrid(page = 1, shouldScroll = true) {
       const date = new Date();
       date.setDate(today.getDate() - days);
       const dateStr = date.toISOString().split('T')[0];
-      endpoint += `&air_date.gte=${dateStr}`;
+      params.append('air_date.gte', dateStr);
   }
+
+  const endpoint = `/discover/tv?${params.toString()}`;
 
   fetch(`api/tmdb.php?endpoint=${encodeURIComponent(endpoint)}`)
     .then(res => res.json())
     .then(data => {
       renderGrid(data.results || [], 'mainGrid');
-      updatePagination(data.page, data.total_pages);
+      updatePagination(data.page || 1, data.total_pages || 1);
 
       if (shouldScroll) {
-          document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth' });
+          const mainContent = document.getElementById('mainContent');
+          if (mainContent) mainContent.scrollIntoView({ behavior: 'smooth' });
       }
     })
-    .catch(err => console.error('Error loading main grid:', err));
+    .catch(err => {
+        console.error('Error loading main grid:', err);
+        const grid = document.getElementById('mainGrid');
+        if (grid) grid.innerHTML = '<p>Error loading data. Please check your API key in the profile settings.</p>';
+    });
 }
 
 function updatePagination(current, total) {
@@ -118,16 +132,16 @@ function searchShows() {
   const mainContent = document.getElementById('mainContent');
 
   if (!query) {
-    searchSection.style.display = 'none';
-    mainContent.style.display = 'block';
+    if (searchSection) searchSection.style.display = 'none';
+    if (mainContent) mainContent.style.display = 'block';
     return;
   }
 
-  fetch(`api/tmdb.php?endpoint=${encodeURIComponent('/search/tv?query=' + query)}`)
+  fetch(`api/tmdb.php?endpoint=${encodeURIComponent('/search/tv?query=' + encodeURIComponent(query))}`)
     .then(res => res.json())
     .then(data => {
-      searchSection.style.display = 'block';
-      mainContent.style.display = 'none';
+      if (searchSection) searchSection.style.display = 'block';
+      if (mainContent) mainContent.style.display = 'none';
       renderGrid(data.results || [], 'searchResults');
     })
     .catch(err => console.error('Search error:', err));

@@ -7,6 +7,16 @@ if (!$is_logged_in) {
 
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'] ?? 'User';
+
+// Fetch TMDB key for admin
+$tmdb_api_key = '';
+if ($is_admin) {
+    try {
+        $stmt = $pdo->prepare("SELECT value FROM settings WHERE setting_key = 'tmdb_api_key'");
+        $stmt->execute();
+        $tmdb_api_key = $stmt->fetchColumn();
+    } catch (Exception $e) {}
+}
 ?>
 
 <div class="profile-container">
@@ -47,6 +57,11 @@ $username = $_SESSION['username'] ?? 'User';
         </div>
 
         <div class="form-group">
+            <label>TMDB API Key:</label>
+            <input type="text" id="adminTmdbKey" value="<?php echo htmlspecialchars($tmdb_api_key); ?>">
+        </div>
+
+        <div class="form-group">
             <label>Plugins:</label>
             <label>
                 <input type="checkbox" id="pluginWatchToggle" <?php if ($plugin_watch == '1') echo 'checked'; ?>>
@@ -61,6 +76,7 @@ $username = $_SESSION['username'] ?? 'User';
     document.getElementById('saveAdminSettings').addEventListener('click', () => {
         const title = document.getElementById('adminSiteTitle').value;
         const theme = document.getElementById('adminTheme').value;
+        const tmdb = document.getElementById('adminTmdbKey').value;
         const watch = document.getElementById('pluginWatchToggle').checked ? '1' : '0';
         const status = document.getElementById('adminStatus');
 
@@ -72,6 +88,7 @@ $username = $_SESSION['username'] ?? 'User';
             body: JSON.stringify({
                 site_title: title,
                 theme: theme,
+                tmdb_api_key: tmdb,
                 plugin_watch: watch
             })
         })

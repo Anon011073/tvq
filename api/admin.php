@@ -30,6 +30,10 @@ try {
         $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE setting_key = 'plugin_watch'");
         $stmt->execute([$input['plugin_watch']]);
     }
+    if (isset($input['tmdb_api_key'])) {
+        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE setting_key = 'tmdb_api_key'");
+        $stmt->execute([$input['tmdb_api_key']]);
+    }
 
     echo json_encode(['success' => true]);
 } catch (Exception $e) {

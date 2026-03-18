@@ -68,6 +68,16 @@ main {
   margin-top: 20px;
 }
 
+@media (max-width: 900px) {
+  .layout-container {
+    flex-direction: column;
+  }
+  .filters-sidebar {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+}
+
 .filters-sidebar {
   width: 260px;
   min-width: 260px;
@@ -106,16 +116,30 @@ main {
     cursor: pointer;
 }
 
-.genre-item {
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 0.9rem;
+#genreList {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.genre-item:hover, .genre-item.active {
-  background: #2a3642;
+.genre-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #909090;
+  transition: all 0.2s;
+}
+
+.genre-item:hover {
+    background: #252f3a;
+    color: #fff;
+}
+
+.genre-item.active {
   color: var(--primary-color);
+  font-weight: bold;
+  background: rgba(255, 94, 87, 0.05);
 }
 
 .grid-content {
@@ -135,6 +159,8 @@ main {
   cursor: pointer;
   transition: transform 0.2s;
   padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card:hover {
@@ -176,10 +202,28 @@ main {
     border: 1px solid #333;
     background: #1c252e;
     color: white;
+    border-radius: 4px;
 }
 
 .page-num.active {
     background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid #2d3843;
+    background: var(--sidebar-bg);
+    color: white;
+    width: 300px;
 }
 
 footer {
@@ -219,6 +263,7 @@ footer {
     border: 1px solid #3d4b5a;
     color: white;
     border-radius: 5px;
+    box-sizing: border-box;
 }
 
 button {
@@ -244,4 +289,37 @@ button:hover {
 
 .horizontal-scroll .card {
     min-width: 150px;
+}
+
+/* Auth Pages Style */
+.auth-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+.auth-container h1 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.auth-container input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #2a2a2a;
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.auth-container button {
+    margin-top: 15px;
+    width: 100%;
 }

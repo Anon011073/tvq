@@ -2,7 +2,17 @@
 // api/tmdb.php
 header('Content-Type: application/json');
 
-$api_key = '0186591f1a581e28945625c27f33d024';
+require_once __DIR__ . '/db.php';
+
+// Fetch API key from DB
+$api_key = '0186591f1a581e28945625c27f33d024'; // Default fallback
+try {
+    $stmt = $pdo->prepare("SELECT value FROM settings WHERE setting_key = 'tmdb_api_key'");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row) $api_key = $row['value'];
+} catch (Exception $e) {}
+
 $base_url = 'https://api.themoviedb.org/3';
 
 $endpoint = $_GET['endpoint'] ?? '';
@@ -22,9 +32,6 @@ if (count($parts) > 1) {
 // Determine if we need to add the API key
 $connector = (strpos($queryString, '?') !== false) ? '&' : '?';
 $url = $base_url . $queryString . $connector . 'api_key=' . $api_key;
-
-// If the endpoint starts with /search or /discover, it might have multiple params
-// We've already captured them in $queryString
 
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);

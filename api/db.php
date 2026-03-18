@@ -23,7 +23,8 @@ try {
     $defaults = [
         'site_title' => 'TV Tracker',
         'theme' => 'default',
-        'plugin_watch' => '0'
+        'plugin_watch' => '0',
+        'tmdb_api_key' => '0186591f1a581e28945625c27f33d024'
     ];
 
     foreach ($defaults as $k => $v) {
