@@ -1,0 +1,25 @@
+/* css/forest.css */
+:root {
+    --bg-color: #1b2e1b;
+    --card-bg: #2d4a2d;
+    --text-color: #f0fff0;
+    --accent-color: #2e8b57;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.card {
+    background: var(--card-bg);
+}
+
+header {
+    background: #152515;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+nav a:hover {
+    color: #98fb98;
+}

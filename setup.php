@@ -5,7 +5,9 @@ $db_dir = __DIR__ . '/api';
 $db_path = $db_dir . '/users.db';
 
 if (!is_dir($db_dir)) {
-    mkdir($db_dir, 0755, true);
+    if (!mkdir($db_dir, 0755, true)) {
+        die("❌ Failed to create 'api' directory for the database. Check permissions.");
+    }
 }
 
 try {
@@ -16,23 +18,42 @@ try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
-        password TEXT
+        password TEXT,
+        is_admin INTEGER DEFAULT 0
     )");
 
-    echo "✅ SQLite Database initialized. (Note: SQLite uses a file instead of a MySQL server, so no phpMyAdmin setup is required).<br>";
-    echo "✅ Table 'users' created successfully.<br>";
+    // Create settings table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
+        setting_key TEXT PRIMARY KEY,
+        value TEXT
+    )");
+
+    // Insert default settings
+    $defaults = [
+        'site_title' => 'TV Tracker',
+        'theme' => 'default',
+        'plugin_watch' => '0'
+    ];
+
+    foreach ($defaults as $k => $v) {
+        $stmt = $pdo->prepare("INSERT OR IGNORE INTO settings (setting_key, value) VALUES (?, ?)");
+        $stmt->execute([$k, $v]);
+    }
+
+    echo "✅ SQLite Database initialized. (Note: SQLite is a file-based database, no server required).<br>";
+    echo "✅ Tables 'users' and 'settings' created successfully.<br>";
 
     // Insert default admin user
     $username = 'admin';
-    $password = 'password123';
+    $password = 'admin';
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
     $stmt->execute([$username]);
     if ($stmt->fetchColumn() == 0) {
-        $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO users (username, password, is_admin) VALUES (?, ?, 1)");
         $stmt->execute([$username, $hashedPassword]);
-        echo "✅ Default admin user created (Username: admin, Password: password123).<br>";
+        echo "✅ Default admin user created (Username: admin, Password: admin).<br>";
     } else {
         echo "ℹ️ Admin user already exists.<br>";
     }
