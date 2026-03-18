@@ -27,6 +27,19 @@
 
   <main class="content-area">
     <h1>👤 Your Profile</h1>
+    <section id="dataSection" style="margin-bottom: 40px; background: #1a1a1a; padding: 20px; border-radius: 10px;">
+      <h2>💾 Backup & Restore</h2>
+      <p style="color: #a0a0a0; margin-bottom: 15px;">Save your local settings and tracked shows to a file or restore them from a previous backup.</p>
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <button onclick="exportData()" class="btn btn-primary">📤 Export Data</button>
+        <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #333; padding-left: 15px;">
+          <input type="file" id="importFile" accept=".json" style="display: none;">
+          <button onclick="document.getElementById('importFile').click()" class="btn btn-secondary">📁 Select Backup</button>
+          <button onclick="importData()" class="btn">📥 Import Data</button>
+        </div>
+      </div>
+    </section>
+
     <section id="trackedSection">
       <h2>🎯 Shows I Watch</h2>
       <div id="trackedShowsGrid" class="main-grid"></div>
@@ -42,6 +55,7 @@
 
   <script src="js/utils.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/main.js"></script>
   <script>
     let profilePage = 1;
     const itemsPerPage = 18; // 3 rows of 6 cards roughly

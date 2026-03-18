@@ -3,8 +3,23 @@
 header('Content-Type: application/json');
 
 $apiKey = 'b6b677eb7d4ec17f700e3d4dfc31d005';
-$endpoint = $_GET['endpoint'] ?? '';
-$params = $_GET;
+
+// Re-parse query string to avoid PHP mangling dots in parameter names
+$params = [];
+$queryString = $_SERVER['QUERY_STRING'] ?? '';
+if ($queryString) {
+    $pairs = explode('&', $queryString);
+    foreach ($pairs as $pair) {
+        $parts = explode('=', $pair, 2);
+        if (count($parts) === 2) {
+            $key = urldecode($parts[0]);
+            $value = urldecode($parts[1]);
+            $params[$key] = $value;
+        }
+    }
+}
+
+$endpoint = $params['endpoint'] ?? '';
 unset($params['endpoint']);
 
 $baseUrl = 'https://api.themoviedb.org/3' . $endpoint;

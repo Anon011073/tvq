@@ -4,7 +4,7 @@
 
 let currentPage = 1;
 let currentGenre = '';
-let currentSort = 'first_air_date.desc'; // Default = Release Date
+let currentSort = 'popularity.desc'; // Default = Popularity
 
 // Restored + Updated renderShows function (horizontal sections)
 function renderShows(shows, containerId) {
@@ -85,14 +85,13 @@ function loadMainGrid(page = 1, shouldScroll = true) {
   const today = new Date();
 
   if (maxAgeYears) {
-      const years = parseInt(maxAgeYears.value);
-      const date = new Date();
-      date.setFullYear(today.getFullYear() - years);
-      const dateStr = date.toISOString().split('T')[0];
+      const year = parseInt(maxAgeYears.value);
+      // Filter for shows released since the start of the selected decade
+      const dateStr = `${year}-01-01`;
       endpoint += `&first_air_date.gte=${dateStr}`;
   }
 
-  if (maxShowAgeDays) {
+  if (maxShowAgeDays && parseInt(maxShowAgeDays.value) > 0) {
       const days = parseInt(maxShowAgeDays.value);
       const date = new Date();
       date.setDate(today.getDate() - days);
@@ -276,3 +275,79 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+/**
+ * Backup & Restore Logic
+ */
+
+function exportData() {
+    const userId = window.CURRENT_USER_ID || 'guest';
+    const data = {};
+    const prefix = `user_${userId}_`;
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(prefix)) {
+            data[key] = localStorage.getItem(key);
+        }
+    }
+
+    if (Object.keys(data).length === 0) {
+        alert("No data found to export.");
+        return;
+    }
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tv_tracker_backup_${userId}_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importData() {
+    const fileInput = document.getElementById('importFile');
+    if (!fileInput || !fileInput.files.length) {
+        alert("Please select a backup file first.");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            const userId = window.CURRENT_USER_ID || 'guest';
+            const prefix = `user_${userId}_`;
+
+            // Basic validation: check if keys match current user or are at least somewhat valid
+            let count = 0;
+            for (const key in data) {
+                // If we want to allow cross-user import, we could strip the old prefix and add new
+                // For now, let's just import them as is if they match the user prefix
+                if (key.startsWith(prefix)) {
+                    localStorage.setItem(key, data[key]);
+                    count++;
+                } else if (key.startsWith('user_')) {
+                    // Remap to current user
+                    const actualKey = key.split('_').slice(2).join('_');
+                    localStorage.setItem(prefix + actualKey, data[key]);
+                    count++;
+                }
+            }
+
+            if (count > 0) {
+                alert(`Successfully imported ${count} items. Page will now reload.`);
+                location.reload();
+            } else {
+                alert("No valid data found in the file.");
+            }
+        } catch (err) {
+            console.error("Import error:", err);
+            alert("Failed to parse the backup file. Ensure it is a valid JSON.");
+        }
+    };
+
+    reader.readAsText(file);
+}

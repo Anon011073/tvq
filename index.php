@@ -31,8 +31,8 @@
       <div class="sidebar-section">
       <h3>Sort By</h3>
       <select id="sortBy" class="sidebar-select">
-        <option value="first_air_date.desc">Release Date</option>
         <option value="popularity.desc">Popularity</option>
+        <option value="first_air_date.desc">Release Date</option>
       </select>
     </div>
 
@@ -40,15 +40,15 @@
       <h3>Filters</h3>
       <div class="filter-item">
         <label for="maxAgeYears" style="display: block; font-size: 0.9rem; color: #a0a0a0; margin-bottom: 5px;">
-          Max Age: <span id="maxAgeYearsValue">100</span> years
+          Released since: <span id="maxAgeYearsValue">1920</span>s
         </label>
-        <input type="range" id="maxAgeYears" class="sidebar-slider" min="0" max="100" step="10" value="100">
+        <input type="range" id="maxAgeYears" class="sidebar-slider" min="1920" max="2020" step="10" value="1920">
       </div>
       <div class="filter-item" style="margin-top: 15px;">
         <label for="maxShowAgeDays" style="display: block; font-size: 0.9rem; color: #a0a0a0; margin-bottom: 5px;">
-          Max. show age: <span id="maxShowAgeDaysValue">90</span> days
+          Max. show age: <span id="maxShowAgeDaysValue">0</span> days
         </label>
-        <input type="range" id="maxShowAgeDays" class="sidebar-slider" min="0" max="90" step="1" value="90">
+        <input type="range" id="maxShowAgeDays" class="sidebar-slider" min="0" max="90" step="1" value="0">
       </div>
     </div>
 
@@ -64,7 +64,7 @@
       <h3>Countries</h3>
       <div class="country-filters" style="display: flex; flex-direction: column; gap: 8px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" class="country-opt" id="countryUS" value="US">
+          <input type="checkbox" class="country-opt" id="countryUS" value="US" checked>
           <label for="countryUS" style="cursor: pointer; font-size: 0.9rem; color: #a0a0a0;">🇺🇸 USA</label>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
