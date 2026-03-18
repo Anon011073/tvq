@@ -19,15 +19,15 @@ if (!$input) {
 
 try {
     if (isset($input['site_title'])) {
-        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE key = 'site_title'");
+        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE setting_key = 'site_title'");
         $stmt->execute([$input['site_title']]);
     }
     if (isset($input['theme'])) {
-        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE key = 'theme'");
+        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE setting_key = 'theme'");
         $stmt->execute([$input['theme']]);
     }
     if (isset($input['plugin_watch'])) {
-        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE key = 'plugin_watch'");
+        $stmt = $pdo->prepare("UPDATE settings SET value = ? WHERE setting_key = 'plugin_watch'");
         $stmt->execute([$input['plugin_watch']]);
     }
 

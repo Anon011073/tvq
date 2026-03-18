@@ -13,9 +13,9 @@ try {
         is_admin INTEGER DEFAULT 0
     )");
 
-    // Settings table
+    // Settings table (using setting_key to avoid potential issues)
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
+        setting_key TEXT PRIMARY KEY,
         value TEXT
     )");
 
@@ -27,12 +27,11 @@ try {
     ];
 
     foreach ($defaults as $k => $v) {
-        $stmt = $pdo->prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
+        $stmt = $pdo->prepare("INSERT OR IGNORE INTO settings (setting_key, value) VALUES (?, ?)");
         $stmt->execute([$k, $v]);
     }
 
-    // Default Admin (admin / admin) - ONLY FOR DEMO/INITIAL SETUP
-    // In a real app, this should be handled more securely.
+    // Default Admin (admin / admin)
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = 'admin'");
     $stmt->execute();
     if ($stmt->fetchColumn() == 0) {

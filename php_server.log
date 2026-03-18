@@ -227,3 +227,123 @@
 [Wed Mar 18 21:13:08 2026] [::1]:58768 Closing
 [Wed Mar 18 21:13:08 2026] [::1]:58780 [200]: GET /js/theme.js
 [Wed Mar 18 21:13:08 2026] [::1]:58780 Closing
+[Wed Mar 18 21:25:22 2026] [::1]:48348 Accepted
+[Wed Mar 18 21:25:22 2026] [::1]:48348 [200]: GET /index.php
+[Wed Mar 18 21:25:22 2026] [::1]:48348 Closing
+[Wed Mar 18 21:25:22 2026] [::1]:48350 Accepted
+[Wed Mar 18 21:25:22 2026] [::1]:48360 Accepted
+[Wed Mar 18 21:25:22 2026] [::1]:48366 Accepted
+[Wed Mar 18 21:25:22 2026] [::1]:48368 Accepted
+[Wed Mar 18 21:25:22 2026] [::1]:48350 [200]: GET /css/style.css
+[Wed Mar 18 21:25:22 2026] [::1]:48360 [200]: GET /js/utils.js
+[Wed Mar 18 21:25:22 2026] [::1]:48366 [200]: GET /js/theme.js
+[Wed Mar 18 21:25:22 2026] [::1]:48368 [200]: GET /js/main.js
+[Wed Mar 18 21:25:22 2026] [::1]:48350 Closing
+[Wed Mar 18 21:25:22 2026] [::1]:48360 Closing
+[Wed Mar 18 21:25:22 2026] [::1]:48366 Closing
+[Wed Mar 18 21:25:22 2026] [::1]:48368 Closing
+[Wed Mar 18 21:25:22 2026] [::1]:48376 Accepted
+[Wed Mar 18 21:25:22 2026] [::1]:48376 [200]: GET /api/tmdb.php?endpoint=%2Fdiscover%2Ftv%3Fpage%3D1%26sort_by%3Dpopularity.desc%26with_original_language%3Den%26with_origin_country%3DUS%26first_air_date.gte%3D1920-01-01
+[Wed Mar 18 21:25:22 2026] [::1]:48376 Closing
+[Wed Mar 18 21:25:23 2026] [::1]:48380 Accepted
+[Wed Mar 18 21:25:23 2026] [::1]:48380 [200]: GET /login.php
+[Wed Mar 18 21:25:23 2026] [::1]:48380 Closing
+[Wed Mar 18 21:25:23 2026] [::1]:48384 Accepted
+[Wed Mar 18 21:25:23 2026] [::1]:48384 [200]: GET /css/style.css
+[Wed Mar 18 21:25:23 2026] [::1]:48384 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48398 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48398 [302]: POST /login.php
+[Wed Mar 18 21:25:24 2026] [::1]:48398 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48414 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48414 [200]: GET /index.php
+[Wed Mar 18 21:25:24 2026] [::1]:48414 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48428 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48436 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48440 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48442 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48428 [200]: GET /css/style.css
+[Wed Mar 18 21:25:24 2026] [::1]:48436 [200]: GET /js/utils.js
+[Wed Mar 18 21:25:24 2026] [::1]:48428 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48436 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48440 [200]: GET /js/theme.js
+[Wed Mar 18 21:25:24 2026] [::1]:48440 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48442 [200]: GET /js/main.js
+[Wed Mar 18 21:25:24 2026] [::1]:48442 Closing
+[Wed Mar 18 21:25:24 2026] [::1]:48450 Accepted
+[Wed Mar 18 21:25:24 2026] [::1]:48450 [200]: GET /api/tmdb.php?endpoint=%2Fdiscover%2Ftv%3Fpage%3D1%26sort_by%3Dpopularity.desc%26with_original_language%3Den%26with_origin_country%3DUS%26first_air_date.gte%3D1920-01-01
+[Wed Mar 18 21:25:24 2026] [::1]:48450 Closing
+[Wed Mar 18 21:25:25 2026] [::1]:48454 Accepted
+[Wed Mar 18 21:25:25 2026] [::1]:48454 [200]: GET /profile.php
+[Wed Mar 18 21:25:25 2026] [::1]:48454 Closing
+[Wed Mar 18 21:25:25 2026] [::1]:48464 Accepted
+[Wed Mar 18 21:25:25 2026] [::1]:48472 Accepted
+[Wed Mar 18 21:25:25 2026] [::1]:48476 Accepted
+[Wed Mar 18 21:25:25 2026] [::1]:48480 Accepted
+[Wed Mar 18 21:25:25 2026] [::1]:48464 [200]: GET /css/style.css
+[Wed Mar 18 21:25:25 2026] [::1]:48472 [200]: GET /js/main.js
+[Wed Mar 18 21:25:25 2026] [::1]:48476 [200]: GET /js/utils.js
+[Wed Mar 18 21:25:25 2026] [::1]:48480 [200]: GET /js/theme.js
+[Wed Mar 18 21:25:25 2026] [::1]:48464 Closing
+[Wed Mar 18 21:25:25 2026] [::1]:48472 Closing
+[Wed Mar 18 21:25:25 2026] [::1]:48476 Closing
+[Wed Mar 18 21:25:25 2026] [::1]:48480 Closing
+[Wed Mar 18 21:25:26 2026] [::1]:48492 Accepted
+[Wed Mar 18 21:25:26 2026] [::1]:48492 [200]: POST /api/admin.php
+[Wed Mar 18 21:25:26 2026] [::1]:48492 Closing
+[Wed Mar 18 21:25:27 2026] [::1]:48502 Accepted
+[Wed Mar 18 21:25:27 2026] [::1]:48502 [200]: GET /profile.php
+[Wed Mar 18 21:25:27 2026] [::1]:48502 Closing
+[Wed Mar 18 21:25:27 2026] [::1]:48516 Accepted
+[Wed Mar 18 21:25:27 2026] [::1]:48524 Accepted
+[Wed Mar 18 21:25:27 2026] [::1]:48526 Accepted
+[Wed Mar 18 21:25:27 2026] [::1]:48536 Accepted
+[Wed Mar 18 21:25:27 2026] [::1]:48538 Accepted
+[Wed Mar 18 21:25:27 2026] [::1]:48516 [404]: GET /css/ocean.css - No such file or directory
+[Wed Mar 18 21:25:27 2026] [::1]:48524 [200]: GET /css/style.css
+[Wed Mar 18 21:25:27 2026] [::1]:48526 [200]: GET /js/main.js
+[Wed Mar 18 21:25:27 2026] [::1]:48516 Closing
+[Wed Mar 18 21:25:27 2026] [::1]:48536 [200]: GET /js/utils.js
+[Wed Mar 18 21:25:27 2026] [::1]:48538 [200]: GET /js/theme.js
+[Wed Mar 18 21:25:27 2026] [::1]:48524 Closing
+[Wed Mar 18 21:25:27 2026] [::1]:48526 Closing
+[Wed Mar 18 21:25:27 2026] [::1]:48536 Closing
+[Wed Mar 18 21:25:27 2026] [::1]:48538 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48550 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48550 [200]: GET /index.php
+[Wed Mar 18 21:25:28 2026] [::1]:48550 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48560 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48574 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48576 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48590 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48594 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48560 [200]: GET /css/style.css
+[Wed Mar 18 21:25:28 2026] [::1]:48574 [404]: GET /css/ocean.css - No such file or directory
+[Wed Mar 18 21:25:28 2026] [::1]:48576 [200]: GET /js/utils.js
+[Wed Mar 18 21:25:28 2026] [::1]:48590 [200]: GET /js/theme.js
+[Wed Mar 18 21:25:28 2026] [::1]:48594 [200]: GET /js/main.js
+[Wed Mar 18 21:25:28 2026] [::1]:48574 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48560 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48576 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48590 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48594 Closing
+[Wed Mar 18 21:25:28 2026] [::1]:48604 Accepted
+[Wed Mar 18 21:25:28 2026] [::1]:48604 [200]: GET /api/tmdb.php?endpoint=%2Fdiscover%2Ftv%3Fpage%3D1%26sort_by%3Dpopularity.desc%26with_original_language%3Den%26with_origin_country%3DUS%26first_air_date.gte%3D1920-01-01
+[Wed Mar 18 21:25:28 2026] [::1]:48604 Closing
+[Wed Mar 18 21:25:29 2026] [::1]:49172 Accepted
+[Wed Mar 18 21:25:29 2026] [::1]:49172 [200]: GET /profile.php
+[Wed Mar 18 21:25:29 2026] [::1]:49172 Closing
+[Wed Mar 18 21:25:29 2026] [::1]:49186 Accepted
+[Wed Mar 18 21:25:29 2026] [::1]:49196 Accepted
+[Wed Mar 18 21:25:29 2026] [::1]:49186 [200]: GET /css/style.css
+[Wed Mar 18 21:25:29 2026] [::1]:49196 [404]: GET /css/ocean.css - No such file or directory
+[Wed Mar 18 21:25:29 2026] [::1]:49196 Closing
+[Wed Mar 18 21:25:29 2026] [::1]:49186 Closing
+[Wed Mar 18 21:25:29 2026] [::1]:49200 Accepted
+[Wed Mar 18 21:25:29 2026] [::1]:49214 Accepted
+[Wed Mar 18 21:25:29 2026] [::1]:49200 [200]: GET /js/main.js
+[Wed Mar 18 21:25:29 2026] [::1]:49230 Accepted
+[Wed Mar 18 21:25:29 2026] [::1]:49214 [200]: GET /js/utils.js
+[Wed Mar 18 21:25:29 2026] [::1]:49230 [200]: GET /js/theme.js
+[Wed Mar 18 21:25:29 2026] [::1]:49200 Closing
+[Wed Mar 18 21:25:29 2026] [::1]:49214 Closing
+[Wed Mar 18 21:25:29 2026] [::1]:49230 Closing

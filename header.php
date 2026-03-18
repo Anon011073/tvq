@@ -11,11 +11,11 @@ $theme = 'default';
 $plugin_watch = '0';
 
 try {
-    $stmt = $pdo->query("SELECT key, value FROM settings");
+    $stmt = $pdo->query("SELECT setting_key, value FROM settings");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        if ($row['key'] === 'site_title') $site_title = $row['value'];
-        if ($row['key'] === 'theme') $theme = $row['value'];
-        if ($row['key'] === 'plugin_watch') $plugin_watch = $row['value'];
+        if ($row['setting_key'] === 'site_title') $site_title = $row['value'];
+        if ($row['setting_key'] === 'theme') $theme = $row['value'];
+        if ($row['setting_key'] === 'plugin_watch') $plugin_watch = $row['value'];
     }
 } catch (Exception $e) {}
 
