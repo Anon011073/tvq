@@ -1,6 +1,11 @@
 <?php
 // setup.php
 
+// Driver Check
+if (!extension_loaded('pdo_sqlite')) {
+    die("<h2>Setup Error: Missing Database Driver</h2><p>The <b>pdo_sqlite</b> extension is not enabled in your PHP configuration. <br>To fix this, please find your <b>php.ini</b> file and uncomment (remove the semicolon) from the following line: <br><br><code>extension=pdo_sqlite</code><br><br>Then restart your web server.</p>");
+}
+
 $db_dir = __DIR__ . '/api';
 $db_path = $db_dir . '/users.db';
 
@@ -32,7 +37,8 @@ try {
     $defaults = [
         'site_title' => 'TV Tracker',
         'theme' => 'default',
-        'plugin_watch' => '0'
+        'plugin_watch' => '0',
+        'tmdb_api_key' => '0186591f1a581e28945625c27f33d024'
     ];
 
     foreach ($defaults as $k => $v) {

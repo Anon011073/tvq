@@ -1,5 +1,11 @@
 <?php
 // api/db.php
+
+// Check if PDO SQLite driver is enabled
+if (!extension_loaded('pdo_sqlite')) {
+    die("<h2>Missing Database Driver</h2><p>The <b>pdo_sqlite</b> extension is not enabled in your PHP configuration. <br>To fix this, please find your <b>php.ini</b> file and uncomment (remove the semicolon) from the following line: <br><br><code>extension=pdo_sqlite</code><br><br>Then restart your web server.</p>");
+}
+
 $db_path = __DIR__ . '/users.db';
 try {
     $pdo = new PDO("sqlite:$db_path");
@@ -13,7 +19,7 @@ try {
         is_admin INTEGER DEFAULT 0
     )");
 
-    // Settings table (using setting_key to avoid potential issues)
+    // Settings table
     $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
         setting_key TEXT PRIMARY KEY,
         value TEXT
