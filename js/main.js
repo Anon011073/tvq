@@ -189,6 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('gridTitle').textContent = 'Popular Shows';
                 loadMainGrid(1, true);
                 showView('mainContent');
+            } else if (view === 'profile') {
+                window.location.href = window.tvq_settings.profile_url;
             } else {
                 showView(view + 'View');
             }

@@ -10,6 +10,7 @@ if (!defined('ABSPATH')) exit;
 
 class TVQ_Tracker {
     public function __construct() {
+        register_activation_hook(__FILE__, array($this, 'activate'));
         add_shortcode('tvq_tracker', array($this, 'render_tracker'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
@@ -17,6 +18,10 @@ class TVQ_Tracker {
         add_action('wp_ajax_nopriv_tvq_tmdb_proxy', array($this, 'tmdb_proxy'));
         add_action('wp_ajax_tvq_save_user_data', array($this, 'save_user_data'));
         add_action('wp_ajax_tvq_get_user_data', array($this, 'get_user_data'));
+        add_action('show_user_profile', array($this, 'user_profile_fields'));
+        add_action('edit_user_profile', array($this, 'user_profile_fields'));
+        add_action('personal_options_update', array($this, 'save_user_profile_fields'));
+        add_action('edit_user_profile_update', array($this, 'save_user_profile_fields'));
     }
 
     public function save_user_data() {
@@ -49,6 +54,102 @@ class TVQ_Tracker {
 
         $data = get_user_meta(get_current_user_id(), $key, true);
         wp_send_json_success($data ? $data : array());
+    }
+
+    public function activate() {
+        add_role('tvq_user', 'TVQ User', array(
+            'read' => true,
+            'tvq_tracker_access' => true,
+        ));
+
+        // Ensure Administrator has the capability
+        $admin = get_role('administrator');
+        if ($admin) {
+            $admin->add_cap('tvq_tracker_access');
+            $admin->add_cap('tvq_can_watch');
+        }
+    }
+
+    public function user_profile_fields($user) {
+        $favs = get_user_meta($user->ID, 'tvq_favs', true);
+        $favs = is_string($favs) ? json_decode($favs, true) : ($favs ? $favs : array());
+
+        $watchlist = get_user_meta($user->ID, 'tvq_watchlist', true);
+        $watchlist = is_string($watchlist) ? json_decode($watchlist, true) : ($watchlist ? $watchlist : array());
+
+        $can_watch = user_can($user->ID, 'tvq_can_watch');
+
+        ?>
+        <hr>
+        <div class="tvq-profile-section">
+            <h2>TVQ Tracker Profile</h2>
+
+            <?php if (current_user_can('manage_options')): ?>
+                <table class="form-table">
+                    <tr>
+                        <th>Watch Access</th>
+                        <td>
+                            <label for="tvq_can_watch">
+                                <input type="checkbox" name="tvq_can_watch" id="tvq_can_watch" value="1" <?php checked($can_watch); ?>>
+                                Allow this user to use the "Watch Now" premium feature.
+                            </label>
+                        </td>
+                    </tr>
+                </table>
+            <?php endif; ?>
+
+            <div class="tvq-profile-data">
+                <h3>⭐ Favourites</h3>
+                <div class="tvq-row">
+                    <h4>TV Series</h4>
+                    <div class="tvq-mini-grid">
+                        <?php foreach($favs as $item): if($item['type'] === 'tv'): ?>
+                            <div class="tvq-mini-item"><?php echo esc_html($item['name']); ?></div>
+                        <?php endif; endforeach; ?>
+                    </div>
+                </div>
+                <div class="tvq-row">
+                    <h4>Movies</h4>
+                    <div class="tvq-mini-grid">
+                        <?php foreach($favs as $item): if($item['type'] === 'movie'): ?>
+                            <div class="tvq-mini-item"><?php echo esc_html($item['name']); ?></div>
+                        <?php endif; endforeach; ?>
+                    </div>
+                </div>
+
+                <h3>📋 Watchlist</h3>
+                <div class="tvq-mini-grid">
+                    <?php foreach($watchlist as $item): ?>
+                        <div class="tvq-mini-item">
+                            <?php echo esc_html($item['name']); ?>
+                            <small>(<?php echo $item['type'] === 'tv' ? 'TV' : 'Movie'; ?>)</small>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <style>
+            .tvq-profile-section { margin-top: 30px; border-top: 2px solid #222; padding-top: 20px; }
+            .tvq-profile-section h2 { background: #222; color: #fff; padding: 10px 15px; border-radius: 4px; display: inline-block; }
+            .tvq-mini-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+            .tvq-mini-item { background: #fff; padding: 6px 12px; border-radius: 20px; border: 1px solid #ff5e57; font-size: 13px; color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+            .tvq-profile-data h3 { margin-top: 30px; border-bottom: 2px solid #ff5e57; padding-bottom: 5px; color: #222; text-transform: uppercase; letter-spacing: 1px; }
+            .tvq-row h4 { margin-bottom: 8px; color: #ff5e57; font-size: 15px; font-weight: bold; }
+        </style>
+        <?php
+    }
+
+    public function save_user_profile_fields($user_id) {
+        if (!current_user_can('manage_options')) {
+            return false;
+        }
+
+        $user = get_userdata($user_id);
+        if (isset($_POST['tvq_can_watch']) && $_POST['tvq_can_watch'] == '1') {
+            $user->add_cap('tvq_can_watch');
+        } else {
+            $user->remove_cap('tvq_can_watch');
+        }
     }
 
     public function tmdb_proxy() {
@@ -290,14 +391,6 @@ class TVQ_Tracker {
                         <section id="calendarView" style="display: none;"></section>
                         <section id="favouritesView" style="display: none;"></section>
                         <section id="watchlistView" style="display: none;"></section>
-                        <section id="profileView" style="display: none;">
-                             <h3>🧩 Backup & Restore</h3>
-                             <div class="backup-btns">
-                                <button onclick="exportData()" class="btn btn-secondary">⬇️ Export</button>
-                                <input type="file" id="importFile" accept=".json" />
-                                <button onclick="importData()" class="btn btn-secondary">⬆️ Import</button>
-                             </div>
-                        </section>
                         <section id="watchView" style="display: none;"></section>
                     </div>
                 </main>
@@ -325,11 +418,9 @@ class TVQ_Tracker {
         wp_enqueue_script('tvq-calendar', plugins_url('js/calendar.js', __FILE__), array('tvq-main'), '1.0.0', true);
         wp_enqueue_script('tvq-favourites', plugins_url('js/favourites.js', __FILE__), array('tvq-main'), '1.0.0', true);
         wp_enqueue_script('tvq-watchlist', plugins_url('js/watchlist.js', __FILE__), array('tvq-main'), '1.0.0', true);
-        wp_enqueue_script('tvq-profile', plugins_url('js/profile.js', __FILE__), array('tvq-main'), '1.0.0', true);
 
         $is_premium_active = is_plugin_active('tvq-watch-premium/tvq-watch-premium.php');
 
-        $min_role = get_option('tvq_min_role_watch', 'read');
         wp_localize_script('tvq-utils', 'tvq_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('tvq_nonce'),
@@ -338,7 +429,8 @@ class TVQ_Tracker {
             'is_premium' => $is_premium_active,
             'buy_url' => get_option('tvq_premium_buy_url', 'http://zeaks.org'),
             'grid_cols' => get_option('tvq_grid_columns', 6),
-            'can_watch' => current_user_can($min_role) && $is_premium_active,
+            'can_watch' => current_user_can('tvq_can_watch') && $is_premium_active,
+            'profile_url' => admin_url('profile.php'),
             'default_view' => get_option('tvq_default_view', 'home'),
             'default_lang' => get_option('tvq_default_language', 'en')
         ));
