@@ -52,14 +52,14 @@ function renderShowDetails(show) {
 
         <section id="trailer" class="details-section"><h3>📽️ Trailer</h3><p class="loading">Loading trailer...</p></section>
 
+        <section id="cast" class="details-section"></section>
+        <section id="reviews" class="details-section"></section>
+        <section id="recommendations" class="details-section"></section>
+
         <section class="details-section">
             <h3>📂 Episodes</h3>
             <div id="episodes" class="episodes-container"></div>
         </section>
-
-        <section id="cast" class="details-section"></section>
-        <section id="reviews" class="details-section"></section>
-        <section id="recommendations" class="details-section"></section>
     `;
 
     // Load episodes

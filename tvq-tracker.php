@@ -193,6 +193,11 @@ class TVQ_Tracker {
         register_setting('tvq_settings_group', 'tvq_tmdb_api_key');
         register_setting('tvq_settings_group', 'tvq_default_view');
         register_setting('tvq_settings_group', 'tvq_default_language');
+        register_setting('tvq_settings_group', 'tvq_default_country');
+        register_setting('tvq_settings_group', 'tvq_default_sort');
+        register_setting('tvq_settings_group', 'tvq_english_only_default');
+        register_setting('tvq_settings_group', 'tvq_enable_trending');
+        register_setting('tvq_settings_group', 'tvq_trending_type');
         register_setting('tvq_settings_group', 'tvq_min_role_watch');
         register_setting('tvq_settings_group', 'tvq_grid_columns');
         register_setting('tvq_settings_group', 'tvq_premium_buy_url');
@@ -247,6 +252,46 @@ class TVQ_Tracker {
                         <td>
                             <input type="text" name="tvq_default_language" value="<?php echo esc_attr(get_option('tvq_default_language', 'en')); ?>" class="small-text" />
                             <p class="description">ISO 639-1 code (e.g., 'en', 'es', 'fr').</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Default Country</th>
+                        <td>
+                            <input type="text" name="tvq_default_country" value="<?php echo esc_attr(get_option('tvq_default_country', '')); ?>" class="small-text" />
+                            <p class="description">ISO 3166-1 alpha-2 (e.g., 'US', 'GB'). Leave blank for All.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Default Sort</th>
+                        <td>
+                            <select name="tvq_default_sort">
+                                <option value="popularity.desc" <?php selected(get_option('tvq_default_sort'), 'popularity.desc'); ?>>Popularity</option>
+                                <option value="first_air_date.desc" <?php selected(get_option('tvq_default_sort'), 'first_air_date.desc'); ?>>Latest Aired</option>
+                                <option value="vote_average.desc" <?php selected(get_option('tvq_default_sort'), 'vote_average.desc'); ?>>Highest Rated</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Default English Only</th>
+                        <td>
+                            <input type="checkbox" name="tvq_english_only_default" value="1" <?php checked(get_option('tvq_english_only_default'), '1'); ?> />
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Enable Trending Section</th>
+                        <td>
+                            <input type="checkbox" name="tvq_enable_trending" value="1" <?php checked(get_option('tvq_enable_trending'), '1'); ?> />
+                            <p class="description">Show a special horizontal section above the grid.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Trending Type</th>
+                        <td>
+                            <select name="tvq_trending_type">
+                                <option value="trending" <?php selected(get_option('tvq_trending_type'), 'trending'); ?>>Trending (Day)</option>
+                                <option value="top_rated" <?php selected(get_option('tvq_trending_type'), 'top_rated'); ?>>Top Rated</option>
+                                <option value="on_the_air" <?php selected(get_option('tvq_trending_type'), 'on_the_air'); ?>>On The Air / Now Playing</option>
+                            </select>
                         </td>
                     </tr>
                     <tr valign="top">
@@ -318,57 +363,66 @@ class TVQ_Tracker {
                 </div>
             </nav>
 
-            <div class="main-layout">
-                <aside class="sidebar" id="tvq-sidebar">
-                    <div class="sidebar-section">
-                        <h3>Sort By</h3>
-                        <select id="sortBy" class="sidebar-select">
-                            <option value="popularity.desc">Popularity</option>
-                            <option value="first_air_date.desc">Latest Aired</option>
-                        </select>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <h3>Options</h3>
-                        <div>
-                            <input type="checkbox" id="englishOnly" checked>
-                            <label for="englishOnly">Only English Language</label>
-                        </div>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <h3>Countries</h3>
-                        <div class="country-filters">
-                            <div><input type="checkbox" class="country-opt" id="countryUS" value="US"><label for="countryUS">🇺🇸 USA</label></div>
-                            <div><input type="checkbox" class="country-opt" id="countryUK" value="GB"><label for="countryUK">🇬🇧 UK</label></div>
-                            <div><input type="checkbox" class="country-opt" id="countryCA" value="CA"><label for="countryCA">🇨🇦 Canada</label></div>
-                        </div>
-                    </div>
-
-                    <div class="sidebar-section">
-                        <h3>Genres</h3>
-                        <div class="genre-list" id="genreFilters">
-                            <div class="genre-item active" data-id="">All Genres</div>
-                            <div class="genre-item" data-id="10759">Action</div>
-                            <div class="genre-item" data-id="16">Animation</div>
-                            <div class="genre-item" data-id="35">Comedy</div>
-                            <div class="genre-item" data-id="80">Crime</div>
-                            <div class="genre-item" data-id="99">Documentary</div>
-                            <div class="genre-item" data-id="18">Drama</div>
-                            <div class="genre-item" data-id="10751">Family</div>
-                            <div class="genre-item" data-id="10765">Sci-Fi</div>
-                            <div class="genre-item" data-id="10766">Soap</div>
-                            <div class="genre-item" data-id="10767">Talk</div>
-                        </div>
-                    </div>
-                </aside>
-
+            <div class="main-layout no-sidebar">
                 <main class="content-area">
                     <header class="content-header">
-                        <input type="text" id="searchInput" placeholder="Search..." />
+                        <div class="search-bar">
+                            <input type="text" id="searchInput" placeholder="Search for shows or movies..." />
+                        </div>
+
+                        <div class="filter-bar" id="tvq-filters">
+                            <div class="filter-group">
+                                <label>Sort By</label>
+                                <select id="sortBy" class="filter-select">
+                                    <option value="popularity.desc">Popularity</option>
+                                    <option value="first_air_date.desc">Latest Aired</option>
+                                    <option value="vote_average.desc">Highest Rated</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Genre</label>
+                                <select id="genreSelect" class="filter-select">
+                                    <option value="">All Genres</option>
+                                    <option value="10759">Action</option>
+                                    <option value="16">Animation</option>
+                                    <option value="35">Comedy</option>
+                                    <option value="80">Crime</option>
+                                    <option value="99">Documentary</option>
+                                    <option value="18">Drama</option>
+                                    <option value="10751">Family</option>
+                                    <option value="10765">Sci-Fi</option>
+                                    <option value="10766">Soap</option>
+                                    <option value="10767">Talk</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label>Country</label>
+                                <select id="countrySelect" class="filter-select">
+                                    <option value="">All Countries</option>
+                                    <option value="US">🇺🇸 USA</option>
+                                    <option value="GB">🇬🇧 UK</option>
+                                    <option value="CA">🇨🇦 Canada</option>
+                                    <option value="AU">🇦🇺 Australia</option>
+                                    <option value="KR">🇰🇷 South Korea</option>
+                                    <option value="JP">🇯🇵 Japan</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group checkbox-group">
+                                <input type="checkbox" id="englishOnly">
+                                <label for="englishOnly">English Only</label>
+                            </div>
+                        </div>
                     </header>
 
                     <div id="view-container">
+                        <section id="trendingSection" style="display: none;">
+                            <h2 id="trendingTitle">Trending Now</h2>
+                            <div id="trendingGrid" class="horizontal-scroll"></div>
+                        </section>
+
                         <!-- Views will be injected here -->
                         <section id="searchSection" style="display: none;">
                             <h2>🔍 Search Results</h2>
@@ -432,7 +486,12 @@ class TVQ_Tracker {
             'can_watch' => current_user_can('tvq_can_watch') && $is_premium_active,
             'profile_url' => admin_url('profile.php'),
             'default_view' => get_option('tvq_default_view', 'home'),
-            'default_lang' => get_option('tvq_default_language', 'en')
+            'default_lang' => get_option('tvq_default_language', 'en'),
+            'default_country' => get_option('tvq_default_country', ''),
+            'default_sort' => get_option('tvq_default_sort', 'popularity.desc'),
+            'english_only' => get_option('tvq_english_only_default') == '1',
+            'trending_enabled' => get_option('tvq_enable_trending') == '1',
+            'trending_type' => get_option('tvq_trending_type', 'trending')
         ));
     }
 }
