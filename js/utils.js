@@ -16,6 +16,7 @@ async function tmdbFetch(endpoint, params = {}) {
   const baseUrl = window.tvq_settings.ajax_url || 'admin-ajax.php';
   const url = new URL(baseUrl, window.location.href);
   url.searchParams.append('action', 'tvq_tmdb_proxy');
+  url.searchParams.append('nonce', window.tvq_settings.nonce);
   url.searchParams.append('endpoint', endpoint);
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.append(key, value);
@@ -33,6 +34,7 @@ async function saveUserData(key, data) {
 
     const formData = new FormData();
     formData.append('action', 'tvq_save_user_data');
+    formData.append('nonce', window.tvq_settings.nonce);
     formData.append('key', `tvq_${key}`);
     formData.append('data', JSON.stringify(data));
 
@@ -49,6 +51,7 @@ async function getUserData(key) {
 
     const url = new URL(window.tvq_settings.ajax_url, window.location.href);
     url.searchParams.append('action', 'tvq_get_user_data');
+    url.searchParams.append('nonce', window.tvq_settings.nonce);
     url.searchParams.append('key', `tvq_${key}`);
 
     const response = await fetch(url);
@@ -143,9 +146,9 @@ async function updateButtonStates(id, storageKey, btnId) {
 
     const exists = data.some(item => item.id === id);
     if (storageKey === 'favs') {
-        btn.textContent = exists ? '❤️ Unfavourite' : '❤️ Favourite';
-    } else {
-        btn.textContent = exists ? '📋 Remove Watchlist' : '📋 Watchlist';
+        btn.innerHTML = exists ? '❤️ Unfavourite' : '❤️ Favourite';
+    } else if (storageKey === 'watchlist') {
+        btn.innerHTML = exists ? '📋 Remove Watchlist' : '📋 Watchlist';
     }
 }
 

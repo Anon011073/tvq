@@ -78,7 +78,8 @@ function loadMainGrid(page = 1, shouldScroll = true) {
 
     let params = {
         page: page,
-        sort_by: currentSort
+        sort_by: currentSort,
+        with_original_language: tvq_settings.default_lang || 'en'
     };
 
     if (currentSort === 'vote_average.desc') {
@@ -231,5 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial Load
+    if (tvq_settings.default_view === 'movies') {
+        currentMediaType = 'movie';
+        document.getElementById('gridTitle').textContent = 'Popular Movies';
+    }
     showView('mainContent');
 });

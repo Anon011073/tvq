@@ -94,16 +94,3 @@ function toggleSeason(id) {
     const el = document.getElementById(id);
     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
-
-async function updateButtonStates(id, storageKey, btnId) {
-    const data = await getUserData(storageKey);
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-
-    const exists = data.some(item => item.id === id);
-    if (storageKey === 'favs') {
-        btn.textContent = exists ? '❤️ Unfavourite' : '❤️ Favourite';
-    } else {
-        btn.textContent = exists ? '📋 Remove Watchlist' : '📋 Watchlist';
-    }
-}

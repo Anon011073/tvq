@@ -20,6 +20,7 @@ class TVQ_Tracker {
     }
 
     public function save_user_data() {
+        check_ajax_referer('tvq_nonce', 'nonce');
         if (!is_user_logged_in()) {
             wp_send_json_error('Unauthorized', 401);
         }
@@ -36,6 +37,7 @@ class TVQ_Tracker {
     }
 
     public function get_user_data() {
+        check_ajax_referer('tvq_nonce', 'nonce');
         if (!is_user_logged_in()) {
             wp_send_json_error('Unauthorized', 401);
         }
@@ -50,6 +52,7 @@ class TVQ_Tracker {
     }
 
     public function tmdb_proxy() {
+        check_ajax_referer('tvq_nonce', 'nonce');
         $api_key = get_option('tvq_tmdb_api_key');
         if (!$api_key) {
             wp_send_json_error('API Key not configured', 400);
@@ -87,6 +90,10 @@ class TVQ_Tracker {
 
     public function register_settings() {
         register_setting('tvq_settings_group', 'tvq_tmdb_api_key');
+        register_setting('tvq_settings_group', 'tvq_default_view');
+        register_setting('tvq_settings_group', 'tvq_default_language');
+        register_setting('tvq_settings_group', 'tvq_min_role_watch');
+        register_setting('tvq_settings_group', 'tvq_custom_css');
     }
 
     public function settings_page() {
@@ -109,6 +116,41 @@ class TVQ_Tracker {
                         <td>
                             <input type="text" name="tvq_tmdb_api_key" value="<?php echo esc_attr(get_option('tvq_tmdb_api_key')); ?>" class="regular-text" />
                             <p class="description">Enter your TMDB API v3 key. You can get one for free at <a href="https://www.themoviedb.org/settings/api" target="_blank">The Movie Database (TMDB)</a>.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Default View</th>
+                        <td>
+                            <select name="tvq_default_view">
+                                <option value="home" <?php selected(get_option('tvq_default_view'), 'home'); ?>>TV Shows</option>
+                                <option value="movies" <?php selected(get_option('tvq_default_view'), 'movies'); ?>>Movies</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Default Language</th>
+                        <td>
+                            <input type="text" name="tvq_default_language" value="<?php echo esc_attr(get_option('tvq_default_language', 'en')); ?>" class="small-text" />
+                            <p class="description">ISO 639-1 code (e.g., 'en', 'es', 'fr').</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Minimum Role to Watch</th>
+                        <td>
+                            <select name="tvq_min_role_watch">
+                                <option value="read" <?php selected(get_option('tvq_min_role_watch'), 'read'); ?>>Subscriber</option>
+                                <option value="edit_posts" <?php selected(get_option('tvq_min_role_watch'), 'edit_posts'); ?>>Contributor</option>
+                                <option value="publish_posts" <?php selected(get_option('tvq_min_role_watch'), 'publish_posts'); ?>>Author</option>
+                                <option value="manage_options" <?php selected(get_option('tvq_min_role_watch'), 'manage_options'); ?>>Administrator</option>
+                            </select>
+                            <p class="description">User must have this capability to see the "Watch Now" button (Premium required).</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Custom CSS</th>
+                        <td>
+                            <textarea name="tvq_custom_css" rows="5" cols="50" class="large-text"><?php echo esc_textarea(get_option('tvq_custom_css')); ?></textarea>
+                            <p class="description">Override plugin styles here.</p>
                         </td>
                     </tr>
                 </table>
@@ -183,8 +225,12 @@ class TVQ_Tracker {
                             <div class="genre-item" data-id="16">Animation</div>
                             <div class="genre-item" data-id="35">Comedy</div>
                             <div class="genre-item" data-id="80">Crime</div>
+                            <div class="genre-item" data-id="99">Documentary</div>
                             <div class="genre-item" data-id="18">Drama</div>
+                            <div class="genre-item" data-id="10751">Family</div>
                             <div class="genre-item" data-id="10765">Sci-Fi</div>
+                            <div class="genre-item" data-id="10766">Soap</div>
+                            <div class="genre-item" data-id="10767">Talk</div>
                         </div>
                     </div>
                 </aside>
@@ -230,6 +276,9 @@ class TVQ_Tracker {
                 </main>
             </div>
         </div>
+        <style>
+            <?php echo get_option('tvq_custom_css'); ?>
+        </style>
         <?php
         return ob_get_clean();
     }
@@ -253,12 +302,16 @@ class TVQ_Tracker {
 
         $is_premium_active = is_plugin_active('tvq-watch-premium/tvq-watch-premium.php');
 
+        $min_role = get_option('tvq_min_role_watch', 'read');
         wp_localize_script('tvq-utils', 'tvq_params', array(
             'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('tvq_nonce'),
             'user_id' => get_current_user_id(),
             'is_logged_in' => is_user_logged_in(),
             'is_premium' => $is_premium_active,
-            'can_watch' => current_user_can('read') && $is_premium_active
+            'can_watch' => current_user_can($min_role) && $is_premium_active,
+            'default_view' => get_option('tvq_default_view', 'home'),
+            'default_lang' => get_option('tvq_default_language', 'en')
         ));
     }
 }
