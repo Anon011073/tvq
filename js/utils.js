@@ -122,7 +122,7 @@ function loadReviews(id, type, targetId = 'reviews') {
 }
 
 // Storage helpers
-async function toggleMediaStorage(id, name, type, key) {
+async function toggleMediaStorage(id, name, type, key, posterPath = '') {
     let data = await getUserData(key);
     const exists = data.some(item => item.id === id);
 
@@ -130,7 +130,13 @@ async function toggleMediaStorage(id, name, type, key) {
         data = data.filter(item => item.id !== id);
         alert(`Removed ${name} from ${key}`);
     } else {
-        data.push({ id, name, type, date: new Date().toISOString() });
+        data.push({
+            id,
+            name,
+            type,
+            poster_path: posterPath,
+            date: new Date().toISOString()
+        });
         alert(`Added ${name} to ${key}`);
     }
 

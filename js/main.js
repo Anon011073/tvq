@@ -149,7 +149,7 @@ function loadTrending() {
 
     tmdbFetch(endpoint).then(data => {
         trendSection.style.display = 'block';
-        renderGrid(data.results || [], 'trendingGrid');
+        renderGrid(data.results ? data.results.slice(0, 15) : [], 'trendingGrid');
     }).catch(err => console.error('Trending error:', err));
 }
 

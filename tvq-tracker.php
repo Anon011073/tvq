@@ -20,6 +20,7 @@ class TVQ_Tracker {
         add_action('wp_ajax_tvq_get_user_data', array($this, 'get_user_data'));
         add_action('show_user_profile', array($this, 'user_profile_fields'));
         add_action('edit_user_profile', array($this, 'user_profile_fields'));
+        add_action('admin_menu', array($this, 'add_profile_page'));
         add_action('personal_options_update', array($this, 'save_user_profile_fields'));
         add_action('edit_user_profile_update', array($this, 'save_user_profile_fields'));
     }
@@ -71,62 +72,31 @@ class TVQ_Tracker {
     }
 
     public function user_profile_fields($user) {
-        $favs = get_user_meta($user->ID, 'tvq_favs', true);
-        $favs = is_string($favs) ? json_decode($favs, true) : ($favs ? $favs : array());
-
-        $watchlist = get_user_meta($user->ID, 'tvq_watchlist', true);
-        $watchlist = is_string($watchlist) ? json_decode($watchlist, true) : ($watchlist ? $watchlist : array());
-
         $can_watch = user_can($user->ID, 'tvq_can_watch');
-
         ?>
         <hr>
         <div class="tvq-profile-section">
             <h2>TVQ Tracker Profile</h2>
-
-            <?php if (current_user_can('manage_options')): ?>
-                <table class="form-table">
-                    <tr>
-                        <th>Watch Access</th>
-                        <td>
-                            <label for="tvq_can_watch">
-                                <input type="checkbox" name="tvq_can_watch" id="tvq_can_watch" value="1" <?php checked($can_watch); ?>>
-                                Allow this user to use the "Watch Now" premium feature.
-                            </label>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
-
-            <div class="tvq-profile-data">
-                <h3>⭐ Favourites</h3>
-                <div class="tvq-row">
-                    <h4>TV Series</h4>
-                    <div class="tvq-mini-grid">
-                        <?php foreach($favs as $item): if($item['type'] === 'tv'): ?>
-                            <div class="tvq-mini-item"><?php echo esc_html($item['name']); ?></div>
-                        <?php endif; endforeach; ?>
-                    </div>
-                </div>
-                <div class="tvq-row">
-                    <h4>Movies</h4>
-                    <div class="tvq-mini-grid">
-                        <?php foreach($favs as $item): if($item['type'] === 'movie'): ?>
-                            <div class="tvq-mini-item"><?php echo esc_html($item['name']); ?></div>
-                        <?php endif; endforeach; ?>
-                    </div>
-                </div>
-
-                <h3>📋 Watchlist</h3>
-                <div class="tvq-mini-grid">
-                    <?php foreach($watchlist as $item): ?>
-                        <div class="tvq-mini-item">
-                            <?php echo esc_html($item['name']); ?>
-                            <small>(<?php echo $item['type'] === 'tv' ? 'TV' : 'Movie'; ?>)</small>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
+            <table class="form-table">
+                <?php if (current_user_can('manage_options')): ?>
+                <tr>
+                    <th>Premium Watch Access</th>
+                    <td>
+                        <label for="tvq_can_watch">
+                            <input type="checkbox" name="tvq_can_watch" id="tvq_can_watch" value="1" <?php checked($can_watch); ?>>
+                            Allow this user to use the "Watch Now" premium feature.
+                        </label>
+                    </td>
+                </tr>
+                <?php endif; ?>
+                <tr>
+                    <th>My Tracker Data</th>
+                    <td>
+                        <a href="<?php echo admin_url('profile.php?page=my-tvq-tracker'); ?>" class="button button-secondary">View My TVQ Tracker Dashboard</a>
+                        <p class="description">View your favorited movies and tracked TV series.</p>
+                    </td>
+                </tr>
+            </table>
         </div>
         <style>
             .tvq-profile-section { margin-top: 30px; border-top: 2px solid #222; padding-top: 20px; }
@@ -187,6 +157,78 @@ class TVQ_Tracker {
             array($this, 'settings_page'),
             'dashicons-video-alt3'
         );
+    }
+
+    public function add_profile_page() {
+        add_submenu_page(
+            'profile.php',
+            'My TVQ Tracker',
+            'My TVQ Tracker',
+            'read',
+            'my-tvq-tracker',
+            array($this, 'my_tvq_page')
+        );
+    }
+
+    public function my_tvq_page() {
+        $user_id = get_current_user_id();
+        $favs = get_user_meta($user_id, 'tvq_favs', true);
+        if (is_string($favs)) $favs = json_decode($favs, true);
+        if (!is_array($favs)) $favs = array();
+
+        $watchlist = get_user_meta($user_id, 'tvq_watchlist', true);
+        if (is_string($watchlist)) $watchlist = json_decode($watchlist, true);
+        if (!is_array($watchlist)) $watchlist = array();
+
+        ?>
+        <div class="wrap tvq-tracker-container light-mode">
+            <h1>📺 My TVQ Tracker Data</h1>
+
+            <div class="tvq-profile-data" style="max-width: 1000px;">
+                <section>
+                    <h3>⭐ Favourites: TV Series</h3>
+                    <div class="tvq-profile-grid">
+                        <?php foreach($favs as $item): if(isset($item['type']) && $item['type'] === 'tv'): ?>
+                            <div class="tvq-profile-card">
+                                <img src="https://image.tmdb.org/t/p/w200<?php echo $item['poster_path']; ?>" onerror="this.src='https://placehold.co/100x150?text=No+Image'" />
+                                <span><?php echo esc_html($item['name']); ?></span>
+                            </div>
+                        <?php endif; endforeach; ?>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>⭐ Favourites: Movies</h3>
+                    <div class="tvq-profile-grid">
+                        <?php foreach($favs as $item): if(isset($item['type']) && $item['type'] === 'movie'): ?>
+                            <div class="tvq-profile-card">
+                                <img src="https://image.tmdb.org/t/p/w200<?php echo $item['poster_path']; ?>" onerror="this.src='https://placehold.co/100x150?text=No+Image'" />
+                                <span><?php echo esc_html($item['name']); ?></span>
+                            </div>
+                        <?php endif; endforeach; ?>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>📋 My Watchlist</h3>
+                    <div class="tvq-profile-grid">
+                        <?php foreach($watchlist as $item): ?>
+                            <div class="tvq-profile-card">
+                                <img src="https://image.tmdb.org/t/p/w200<?php echo isset($item['poster_path']) ? $item['poster_path'] : ''; ?>" onerror="this.src='https://placehold.co/100x150?text=No+Image'" />
+                                <span><?php echo esc_html($item['name']); ?> (<?php echo strtoupper($item['type']); ?>)</span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <style>
+            .tvq-profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; margin-bottom: 30px; }
+            .tvq-profile-card { text-align: center; font-size: 12px; }
+            .tvq-profile-card img { width: 100%; border-radius: 4px; margin-bottom: 5px; border: 1px solid #ddd; }
+            .tvq-profile-data h3 { margin-top: 20px; border-bottom: 2px solid #ff5e57; padding-bottom: 5px; color: #222; }
+        </style>
+        <?php
     }
 
     public function register_settings() {

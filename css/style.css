@@ -147,12 +147,26 @@
 }
 
 .tvq-tracker-container .card, .tvq-tracker-container .rec-card, .tvq-tracker-container .show-card {
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   text-align: center;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
   border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+}
+
+.tvq-tracker-container .card h3, .tvq-tracker-container .rec-card h4, .tvq-tracker-container .show-card h3 {
+  margin: 8px 0 4px;
+  font-size: 16px;
+  line-height: 1.2;
+  height: 38px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .tvq-tracker-container.dark-mode .card, .tvq-tracker-container.dark-mode .rec-card {
@@ -171,6 +185,8 @@
 
 .tvq-tracker-container .card img, .tvq-tracker-container .rec-card img, .tvq-tracker-container .show-card img {
   width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
   border-radius: 6px;
   display: block;
 }
@@ -226,20 +242,29 @@
 /* Horizontal Scroll (Trending) */
 .tvq-tracker-container .horizontal-scroll {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     overflow-x: auto;
-    padding-bottom: 20px;
+    padding-bottom: 15px;
     scrollbar-width: thin;
+    align-items: stretch;
 }
 
 .tvq-tracker-container .horizontal-scroll .show-card {
-    min-width: 150px;
-    flex: 0 0 auto;
+    width: 160px;
+    flex: 0 0 160px;
 }
 
 /* Details Page Sections */
 .tvq-tracker-container .details-section {
     margin-bottom: 40px;
+}
+
+.tvq-tracker-container .season-title {
+    cursor: pointer;
+    padding: 10px;
+    background: rgba(255, 94, 87, 0.05);
+    border-radius: 6px;
+    margin-bottom: 5px;
 }
 
 .tvq-tracker-container .episode-row {

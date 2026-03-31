@@ -37,8 +37,8 @@ function renderShowDetails(show) {
                     <span>📺 Seasons: ${show.number_of_seasons}</span>
                 </div>
                 <div class="btn-group">
-                    <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'favs')">❤️ Favourite</button>
-                    <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'watchlist')">📋 Watchlist</button>
+                    <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'favs', '${show.poster_path}')">❤️ Favourite</button>
+                    <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'watchlist', '${show.poster_path}')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
                         `<button class="btn btn-primary btn-watch" onclick="showView('watchView', {id: ${show.id}, type: 'tv'})">▶️ Watch Now</button>` :
                         `<div class="premium-upsell">

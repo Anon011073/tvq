@@ -37,8 +37,8 @@ function renderMovieDetails(movie) {
                     <span>🕒 Runtime: ${movie.runtime} min</span>
                 </div>
                 <div class="btn-group">
-                    <button id="movieFavBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${movie.title.replace(/'/g, "\\'")}', 'movie', 'favs')">❤️ Favourite</button>
-                    <button id="movieWatchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${movie.title.replace(/'/g, "\\'")}', 'movie', 'watchlist')">📋 Watchlist</button>
+                    <button id="movieFavBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${movie.title.replace(/'/g, "\\'")}', 'movie', 'favs', '${movie.poster_path}')">❤️ Favourite</button>
+                    <button id="movieWatchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${movie.title.replace(/'/g, "\\'")}', 'movie', 'watchlist', '${movie.poster_path}')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
                         `<button class="btn btn-primary btn-watch" onclick="showView('watchView', {id: ${movie.id}, type: 'movie'})">▶️ Watch Now</button>` :
                         `<div class="premium-upsell">
