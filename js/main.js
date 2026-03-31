@@ -296,9 +296,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial Load
-    if (tvq_settings.default_view === 'movies') {
-        currentMediaType = 'movie';
-        document.getElementById('gridTitle').textContent = 'Popular Movies';
+    const hash = window.location.hash;
+    if (hash.startsWith('#view=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const view = params.get('view');
+        const id = params.get('id');
+        if (view === 'show') showView('showDetails', { id });
+        else if (view === 'movie') showView('movieDetails', { id });
+    } else {
+        if (tvq_settings.default_view === 'movies') {
+            currentMediaType = 'movie';
+            document.getElementById('gridTitle').textContent = 'Popular Movies';
+        }
+        showView('mainContent');
     }
-    showView('mainContent');
 });
