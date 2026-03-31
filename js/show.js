@@ -41,7 +41,10 @@ function renderShowDetails(show) {
                     <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'watchlist')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
                         `<button class="btn btn-primary btn-watch" onclick="showView('watchView', {id: ${show.id}, type: 'tv'})">▶️ Watch Now</button>` :
-                        `<span class="premium-notice">Watch requires Premium Plugin</span>`
+                        `<div class="premium-upsell">
+                            <span class="premium-notice">Watch requires Premium Plugin</span>
+                            <a href="${tvq_settings.buy_url}" target="_blank" class="btn btn-small btn-premium">🛒 Get Premium</a>
+                        </div>`
                     }
                 </div>
             </div>

@@ -97,9 +97,21 @@ class TVQ_Tracker {
     }
 
     public function settings_page() {
+        $is_premium = is_plugin_active('tvq-watch-premium/tvq-watch-premium.php');
         ?>
         <div class="wrap">
             <h1>TVQ Tracker Settings</h1>
+
+            <div class="notice <?php echo $is_premium ? 'notice-success' : 'notice-warning'; ?>">
+                <p>
+                    <strong>Premium Status:</strong>
+                    <?php if ($is_premium): ?>
+                        ✅ Active - "Watch Now" feature is enabled.
+                    <?php else: ?>
+                        ❌ Inactive - "Watch Now" feature is disabled. <a href="https://tvqtracker.com/premium" target="_blank" class="button button-primary" style="margin-left: 10px;">Upgrade to Premium</a>
+                    <?php endif; ?>
+                </p>
+            </div>
 
             <div class="notice notice-info">
                 <p><strong>How to use:</strong> To display the TV and Movie tracker on any page or post, simply add the shortcode: <code>[tvq_tracker]</code></p>
@@ -309,6 +321,7 @@ class TVQ_Tracker {
             'user_id' => get_current_user_id(),
             'is_logged_in' => is_user_logged_in(),
             'is_premium' => $is_premium_active,
+            'buy_url' => 'https://tvqtracker.com/premium', // Placeholder for buy link
             'can_watch' => current_user_can($min_role) && $is_premium_active,
             'default_view' => get_option('tvq_default_view', 'home'),
             'default_lang' => get_option('tvq_default_language', 'en')

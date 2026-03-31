@@ -160,7 +160,16 @@
 .tvq-tracker-container .btn-primary { background: #ff5e57; }
 .tvq-tracker-container .btn-danger { background: #e63946; }
 .tvq-tracker-container .btn-secondary { background: #777; }
+.tvq-tracker-container .btn-premium { background: #f1c40f; color: #000 !important; }
 .tvq-tracker-container .btn-sm, .tvq-tracker-container .btn-small { padding: 4px 8px; font-size: 0.8rem; }
+
+.tvq-tracker-container .premium-upsell {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+}
 
 /* Calendar */
 .tvq-tracker-container .calendar-grid-view {
