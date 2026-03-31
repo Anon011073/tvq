@@ -93,6 +93,11 @@ class TVQ_Tracker {
         ?>
         <div class="wrap">
             <h1>TVQ Tracker Settings</h1>
+
+            <div class="notice notice-info">
+                <p><strong>How to use:</strong> To display the TV and Movie tracker on any page or post, simply add the shortcode: <code>[tvq_tracker]</code></p>
+            </div>
+
             <form method="post" action="options.php">
                 <?php
                 settings_fields('tvq_settings_group');
@@ -101,11 +106,26 @@ class TVQ_Tracker {
                 <table class="form-table">
                     <tr valign="top">
                         <th scope="row">TMDB API Key</th>
-                        <td><input type="text" name="tvq_tmdb_api_key" value="<?php echo esc_attr(get_option('tvq_tmdb_api_key')); ?>" class="regular-text" /></td>
+                        <td>
+                            <input type="text" name="tvq_tmdb_api_key" value="<?php echo esc_attr(get_option('tvq_tmdb_api_key')); ?>" class="regular-text" />
+                            <p class="description">Enter your TMDB API v3 key. You can get one for free at <a href="https://www.themoviedb.org/settings/api" target="_blank">The Movie Database (TMDB)</a>.</p>
+                        </td>
                     </tr>
                 </table>
                 <?php submit_button(); ?>
             </form>
+
+            <hr>
+
+            <h2>Plugin Documentation</h2>
+            <p>This plugin allows you to browse TV shows and movies, track your watchlist, and manage your favourites.</p>
+            <ul>
+                <li><strong>Discovery:</strong> Use the sidebar to filter by Genre, Country, and Sort Order.</li>
+                <li><strong>Search:</strong> Use the search bar at the top to find specific titles.</li>
+                <li><strong>Watchlist & Favourites:</strong> Logged-in users can save items to their profile. These are synced to the WordPress database.</li>
+                <li><strong>Trailers:</strong> Movie and TV series trailers are automatically embedded on the details pages.</li>
+                <li><strong>Premium Features:</strong> The "Watch Now" functionality is reserved for users with the TVQ Watch Premium plugin installed.</li>
+            </ul>
         </div>
         <?php
     }
