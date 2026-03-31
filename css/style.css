@@ -45,6 +45,25 @@
   border-radius: 10px;
 }
 
+.tvq-tracker-container .genre-item {
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.tvq-tracker-container .genre-list {
+    cursor: pointer;
+}
+
+.tvq-tracker-container .genre-item:hover {
+  background: rgba(255, 94, 87, 0.1);
+}
+
+.tvq-tracker-container .genre-item.active {
+  background: #ff5e57;
+  color: #fff;
+}
+
 .tvq-tracker-container.dark-mode .sidebar {
   background: #1c252e;
   border: 1px solid #2d3843;
@@ -89,9 +108,15 @@
 .tvq-tracker-container .show-grid,
 .tvq-tracker-container .rec-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(var(--tvq-grid-cols, 6), 1fr);
   gap: 20px;
   margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+  .tvq-tracker-container .main-grid, .tvq-tracker-container .show-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
 }
 
 .tvq-tracker-container .card, .tvq-tracker-container .rec-card, .tvq-tracker-container .show-card {

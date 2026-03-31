@@ -50,7 +50,7 @@ function renderMovieDetails(movie) {
             </div>
         </section>
 
-        <section id="movieTrailer" class="details-section"></section>
+        <section id="movieTrailer" class="details-section"><h3>📽️ Trailer</h3><p class="loading">Loading trailer...</p></section>
         <section id="movieCast" class="details-section"></section>
         <section id="movieReviews" class="details-section"></section>
         <section id="movieRecommendations" class="details-section"></section>

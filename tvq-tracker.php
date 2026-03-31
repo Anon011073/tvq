@@ -93,6 +93,8 @@ class TVQ_Tracker {
         register_setting('tvq_settings_group', 'tvq_default_view');
         register_setting('tvq_settings_group', 'tvq_default_language');
         register_setting('tvq_settings_group', 'tvq_min_role_watch');
+        register_setting('tvq_settings_group', 'tvq_grid_columns');
+        register_setting('tvq_settings_group', 'tvq_premium_buy_url');
         register_setting('tvq_settings_group', 'tvq_custom_css');
     }
 
@@ -108,7 +110,7 @@ class TVQ_Tracker {
                     <?php if ($is_premium): ?>
                         ✅ Active - "Watch Now" feature is enabled.
                     <?php else: ?>
-                        ❌ Inactive - "Watch Now" feature is disabled. <a href="https://tvqtracker.com/premium" target="_blank" class="button button-primary" style="margin-left: 10px;">Upgrade to Premium</a>
+                        ❌ Inactive - "Watch Now" feature is disabled. <a href="<?php echo esc_url(get_option('tvq_premium_buy_url', 'http://zeaks.org')); ?>" target="_blank" class="button button-primary" style="margin-left: 10px;">Upgrade to Premium</a>
                     <?php endif; ?>
                 </p>
             </div>
@@ -159,6 +161,19 @@ class TVQ_Tracker {
                         </td>
                     </tr>
                     <tr valign="top">
+                        <th scope="row">Grid Columns</th>
+                        <td>
+                            <input type="number" name="tvq_grid_columns" value="<?php echo esc_attr(get_option('tvq_grid_columns', 6)); ?>" min="1" max="10" />
+                            <p class="description">How many columns of posters to display in the grid (Desktop view).</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Premium Buy URL</th>
+                        <td>
+                            <input type="text" name="tvq_premium_buy_url" value="<?php echo esc_attr(get_option('tvq_premium_buy_url', 'http://zeaks.org')); ?>" class="regular-text" />
+                        </td>
+                    </tr>
+                    <tr valign="top">
                         <th scope="row">Custom CSS</th>
                         <td>
                             <textarea name="tvq_custom_css" rows="5" cols="50" class="large-text"><?php echo esc_textarea(get_option('tvq_custom_css')); ?></textarea>
@@ -192,11 +207,11 @@ class TVQ_Tracker {
         <div id="tvq-tracker-app" class="tvq-tracker-container">
             <nav class="tvq-nav">
                 <div class="nav-links">
-                    <a href="#" data-view="home">🏠 Home</a>
+                    <a href="#" data-view="home">📺 TV Series</a>
+                    <a href="#" data-view="movies">🎬 Movies</a>
                     <a href="#" data-view="calendar">📅 Calendar</a>
                     <a href="#" data-view="favourites">⭐ Favourites</a>
                     <a href="#" data-view="watchlist">📋 Watchlist</a>
-                    <a href="#" data-view="movies">🎬 Movies</a>
                     <a href="#" data-view="profile">👤 Profile</a>
                     <button id="themeToggle" class="theme-toggle">🌙 Toggle Theme</button>
                 </div>
@@ -321,7 +336,8 @@ class TVQ_Tracker {
             'user_id' => get_current_user_id(),
             'is_logged_in' => is_user_logged_in(),
             'is_premium' => $is_premium_active,
-            'buy_url' => 'https://tvqtracker.com/premium', // Placeholder for buy link
+            'buy_url' => get_option('tvq_premium_buy_url', 'http://zeaks.org'),
+            'grid_cols' => get_option('tvq_grid_columns', 6),
             'can_watch' => current_user_can($min_role) && $is_premium_active,
             'default_view' => get_option('tvq_default_view', 'home'),
             'default_lang' => get_option('tvq_default_language', 'en')

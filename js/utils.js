@@ -68,15 +68,19 @@ function loadTrailers(id, type, targetId = 'trailer') {
     const endpoint = type === 'tv' ? `/tv/${id}/videos` : `/movie/${id}/videos`;
     tmdbFetch(endpoint)
         .then(data => {
-            const trailer = data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+            const trailer = data.results.find(v => (v.type === 'Trailer' || v.type === 'Teaser') && v.site === 'YouTube');
             const trailerDiv = document.getElementById(targetId);
-            if (trailer && trailerDiv) {
-                trailerDiv.innerHTML = `
-                    <h3>📽️ Trailer</h3>
-                    <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/${trailer.key}" frameborder="0" allowfullscreen></iframe>
-                    </div>
-                `;
+            if (trailerDiv) {
+                if (trailer) {
+                    trailerDiv.innerHTML = `
+                        <h3>📽️ Trailer</h3>
+                        <div class="video-container">
+                            <iframe src="https://www.youtube.com/embed/${trailer.key}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    `;
+                } else {
+                    trailerDiv.innerHTML = ''; // Hide if no trailer found
+                }
             }
         });
 }

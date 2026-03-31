@@ -19,6 +19,12 @@ function showView(viewId, params = {}) {
     const target = document.getElementById(viewId);
     if (target) target.style.display = 'block';
 
+    // Toggle sidebar visibility
+    const sidebar = document.getElementById('tvq-sidebar');
+    if (sidebar) {
+        sidebar.style.display = (viewId === 'mainContent' || viewId === 'searchSection') ? 'block' : 'none';
+    }
+
     // Handle view-specific initialization
     if (viewId === 'mainContent') {
         loadMainGrid(currentPage, false);
@@ -161,6 +167,10 @@ function searchMedia() {
 // --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Apply grid column setting
+    if (window.tvq_settings.grid_cols) {
+        document.documentElement.style.setProperty('--tvq-grid-cols', window.tvq_settings.grid_cols);
+    }
     // Navigation Links
     document.querySelectorAll('.tvq-nav a[data-view]').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -171,11 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentMediaType = 'movie';
                 currentGenre = '';
                 document.getElementById('gridTitle').textContent = 'Popular Movies';
+                loadMainGrid(1, true);
                 showView('mainContent');
             } else if (view === 'home') {
                 currentMediaType = 'tv';
                 currentGenre = '';
                 document.getElementById('gridTitle').textContent = 'Popular Shows';
+                loadMainGrid(1, true);
                 showView('mainContent');
             } else {
                 showView(view + 'View');
