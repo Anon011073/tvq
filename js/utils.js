@@ -27,6 +27,8 @@ async function tmdbFetch(endpoint, params = {}) {
 
 // persistence helpers
 async function saveUserData(key, data) {
+    tvq_cache[key] = data; // Update cache immediately
+
     if (!window.tvq_settings.is_logged_in) {
         localStorage.setItem(getUserKey(key), JSON.stringify(data));
         return;
@@ -44,9 +46,14 @@ async function saveUserData(key, data) {
     });
 }
 
+const tvq_cache = {};
 async function getUserData(key) {
+    if (tvq_cache[key]) return tvq_cache[key];
+
     if (!window.tvq_settings.is_logged_in) {
-        return JSON.parse(localStorage.getItem(getUserKey(key)) || '[]');
+        const localData = JSON.parse(localStorage.getItem(getUserKey(key)) || '[]');
+        tvq_cache[key] = localData;
+        return localData;
     }
 
     const url = new URL(window.tvq_settings.ajax_url, window.location.href);
@@ -58,7 +65,9 @@ async function getUserData(key) {
     const result = await response.json();
 
     if (result.success) {
-        return typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+        const parsed = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+        tvq_cache[key] = parsed;
+        return parsed;
     }
     return [];
 }
@@ -128,7 +137,7 @@ async function toggleMediaStorage(id, name, type, key, posterPath = '') {
 
     if (exists) {
         data = data.filter(item => item.id !== id);
-        alert(`Removed ${name} from ${key}`);
+        // Removed blocking alert for performance
     } else {
         data.push({
             id,
@@ -137,28 +146,38 @@ async function toggleMediaStorage(id, name, type, key, posterPath = '') {
             poster_path: posterPath,
             date: new Date().toISOString()
         });
-        alert(`Added ${name} to ${key}`);
+        // Removed blocking alert for performance
     }
 
+    // Refresh button states immediately for better UI response
+    if (document.getElementById('favBtn') && key === 'favs') updateButtonStates(id, 'favs', 'favBtn', !exists);
+    if (document.getElementById('watchlistBtn') && key === 'watchlist') updateButtonStates(id, 'watchlist', 'watchlistBtn', !exists);
+    if (document.getElementById('movieFavBtn') && key === 'favs') updateButtonStates(id, 'favs', 'movieFavBtn', !exists);
+    if (document.getElementById('movieWatchlistBtn') && key === 'watchlist') updateButtonStates(id, 'watchlist', 'movieWatchlistBtn', !exists);
+
     await saveUserData(key, data);
-    
-    // Refresh button states if on detail page
-    if (document.getElementById('favBtn')) updateButtonStates(id, 'favs', 'favBtn');
-    if (document.getElementById('watchlistBtn')) updateButtonStates(id, 'watchlist', 'watchlistBtn');
-    if (document.getElementById('movieFavBtn')) updateButtonStates(id, 'favs', 'movieFavBtn');
-    if (document.getElementById('movieWatchlistBtn')) updateButtonStates(id, 'watchlist', 'movieWatchlistBtn');
 }
 
-async function updateButtonStates(id, storageKey, btnId) {
-    const data = await getUserData(storageKey);
+async function updateButtonStates(id, storageKey, btnId, isForcedValue = null) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
 
-    const exists = data.some(item => item.id === id);
+    let exists;
+    if (isForcedValue !== null) {
+        exists = isForcedValue;
+    } else {
+        const data = await getUserData(storageKey);
+        exists = data.some(item => item.id === id);
+    }
+
     if (storageKey === 'favs') {
         btn.innerHTML = exists ? '❤️ Unfavourite' : '❤️ Favourite';
+        btn.classList.toggle('btn-danger', exists);
+        btn.classList.toggle('btn-secondary', !exists);
     } else if (storageKey === 'watchlist') {
         btn.innerHTML = exists ? '📋 Remove Watchlist' : '📋 Watchlist';
+        btn.classList.toggle('btn-primary', exists);
+        btn.classList.toggle('btn-secondary', !exists);
     }
 }
 

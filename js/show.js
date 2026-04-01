@@ -56,6 +56,17 @@ function renderShowDetails(show) {
         <section id="reviews" class="details-section"></section>
         <section id="recommendations" class="details-section"></section>
 
+        <section class="details-section progress-tracker" style="background: rgba(255,94,87,0.1); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+            <h3>📊 My Episode Progress</h3>
+            <p>Enter the last season and episode you've watched:</p>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <label>Season:</label> <input type="number" id="progressSeason" min="1" style="width: 60px; padding: 5px;">
+                <label>Episode:</label> <input type="number" id="progressEpisode" min="1" style="width: 60px; padding: 5px;">
+                <button class="btn btn-primary" onclick="saveShowProgress(${show.id})">Save Progress</button>
+            </div>
+            <div id="progressMessage" style="margin-top: 10px; font-weight: bold; color: #ff5e57;"></div>
+        </section>
+
         <section class="details-section">
             <h3>📂 Episodes</h3>
             <div id="episodes" class="episodes-container"></div>
@@ -70,6 +81,36 @@ function renderShowDetails(show) {
 
     updateButtonStates(show.id, 'favs', 'favBtn');
     updateButtonStates(show.id, 'watchlist', 'watchlistBtn');
+    loadShowProgress(show.id);
+}
+
+async function loadShowProgress(id) {
+    const progress = await getUserData('watch_progress');
+    const showProgress = progress.find(p => p.id == id);
+    if (showProgress) {
+        document.getElementById('progressSeason').value = showProgress.s || 1;
+        document.getElementById('progressEpisode').value = showProgress.e || 1;
+        document.getElementById('progressMessage').innerText = `Last Watched: Season ${showProgress.s}, Episode ${showProgress.e}`;
+    }
+}
+
+async function saveShowProgress(id) {
+    const s = parseInt(document.getElementById('progressSeason').value);
+    const e = parseInt(document.getElementById('progressEpisode').value);
+    if (!s || !e) return;
+
+    let progress = await getUserData('watch_progress');
+    const index = progress.findIndex(p => p.id == id);
+    if (index > -1) {
+        progress[index].s = s;
+        progress[index].e = e;
+        progress[index].date = new Date().toISOString();
+    } else {
+        progress.push({ id, type: 'tv', s, e, date: new Date().toISOString() });
+    }
+
+    await saveUserData('watch_progress', progress);
+    document.getElementById('progressMessage').innerText = `Progress saved! Last Watched: Season ${s}, Episode ${e}`;
 }
 
 function renderEpisodes(showId, seasonNumber, episodes) {

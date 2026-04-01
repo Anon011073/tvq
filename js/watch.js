@@ -35,7 +35,7 @@ async function startWatch(id, type, s = 1, e = 1) {
             frame.innerHTML = `<iframe src="${result.data.url}" frameborder="0" allowfullscreen></iframe>`;
 
             // Log watch progress
-            markAsWatched(id, type);
+            markAsWatched(id, type, s, e);
         } else {
             document.getElementById('player-loading').innerHTML = '<div class="error">Failed to load player. Ensure Premium Plugin is active.</div>';
         }
@@ -45,11 +45,15 @@ async function startWatch(id, type, s = 1, e = 1) {
     }
 }
 
-async function markAsWatched(id, type) {
+async function markAsWatched(id, type, s = 1, e = 1) {
     let progress = await getUserData('watch_progress');
-    const exists = progress.some(item => item.id === id);
-    if (!exists) {
-        progress.push({ id, type, date: new Date().toISOString(), status: 'watched' });
-        await saveUserData('watch_progress', progress);
+    const index = progress.findIndex(item => item.id == id);
+    if (index > -1) {
+        progress[index].s = s;
+        progress[index].e = e;
+        progress[index].date = new Date().toISOString();
+    } else {
+        progress.push({ id, type, s, e, date: new Date().toISOString() });
     }
+    await saveUserData('watch_progress', progress);
 }
