@@ -234,7 +234,8 @@ class TVQ_Tracker {
                                 if(isset($item['type']) && $item['type'] === 'tv'):
                                     $id = isset($item['id']) ? $item['id'] : '';
                                     $name = isset($item['name']) ? $item['name'] : (isset($item['title']) ? $item['title'] : 'Unknown');
-                                    $poster_path = isset($item['poster_path']) ? $item['poster_path'] : '';
+                                    $poster_path = (isset($item['poster_path']) && $item['poster_path'] !== 'null' && !empty($item['poster_path'])) ? $item['poster_path'] : '';
+                                    $poster_path = (isset($item['poster_path']) && $item['poster_path'] !== 'null' && !empty($item['poster_path'])) ? $item['poster_path'] : '';
                                     $poster = !empty($poster_path) ? 'https://image.tmdb.org/t/p/w200' . $poster_path : 'https://placehold.co/200x300?text=No+Image';
                             ?>
                                 <div class="tvq-profile-card" onclick="location.href='<?php echo admin_url('admin-ajax.php?action=tvq_redirect&id='.esc_attr($id).'&type=tv'); ?>'">
@@ -272,7 +273,7 @@ class TVQ_Tracker {
                             $id = isset($item['id']) ? $item['id'] : '';
                             $type = isset($item['type']) ? $item['type'] : 'tv';
                             $name = isset($item['name']) ? $item['name'] : (isset($item['title']) ? $item['title'] : 'Unknown');
-                            $poster_path = isset($item['poster_path']) ? $item['poster_path'] : '';
+                            $poster_path = (isset($item['poster_path']) && $item['poster_path'] !== 'null' && !empty($item['poster_path'])) ? $item['poster_path'] : '';
                             $poster = !empty($poster_path) ? 'https://image.tmdb.org/t/p/w200' . $poster_path : 'https://placehold.co/200x300?text=No+Image';
                         ?>
                             <div class="tvq-profile-card" onclick="location.href='<?php echo admin_url('admin-ajax.php?action=tvq_redirect&id='.esc_attr($id).'&type='.esc_attr($type)); ?>'">

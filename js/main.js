@@ -44,7 +44,7 @@ function showView(viewId, params = {}) {
     } else if (viewId === 'watchlistView') {
         if (typeof renderWatchlist === 'function') renderWatchlist();
     } else if (viewId === 'watchView' && params.id) {
-        if (typeof startWatch === 'function') startWatch(params.id, params.type);
+        if (typeof startWatch === 'function') startWatch(params.id, params.type, params.s || 1, params.e || 1);
     }
 }
 

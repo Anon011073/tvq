@@ -18,9 +18,16 @@ class TVQ_Watch_Premium {
 
         $tmdb_id = isset($_GET['id']) ? sanitize_text_field($_GET['id']) : '';
         $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : 'tv';
+        $season = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '1';
+        $episode = isset($_GET['e']) ? sanitize_text_field($_GET['e']) : '1';
 
         // SuperEmbed Player Logic
+        // For movies: video_id=$id&tmdb=1
+        // For TV: video_id=$id&tmdb=1&s=$season&e=$episode
         $url = "https://multiembed.mov/directstream.php?video_id=$tmdb_id&tmdb=1";
+        if ($type === 'tv') {
+            $url .= "&s=$season&e=$episode";
+        }
 
         wp_send_json_success(array('url' => $url));
     }

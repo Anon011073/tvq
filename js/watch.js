@@ -2,12 +2,12 @@
  * js/watch.js - Watch View Logic (Integrated with Premium Plugin)
  */
 
-async function startWatch(id, type) {
+async function startWatch(id, type, s = 1, e = 1) {
     const container = document.getElementById('watchView');
     container.innerHTML = `
         <button class="btn btn-secondary" onclick="showView('${type === 'tv' ? 'showDetails' : 'movieDetails'}', {id: ${id}})">⬅️ Back to Details</button>
         <div class="watch-container">
-            <h2>Now Watching</h2>
+            <h2>Now Watching ${type === 'tv' ? `(Season ${s} Episode ${e})` : ''}</h2>
             <div id="player-loading" class="loading">Loading secure player...</div>
             <div id="player-frame" class="video-container" style="display:none;"></div>
         </div>
@@ -19,6 +19,10 @@ async function startWatch(id, type) {
     url.searchParams.append('nonce', window.tvq_settings.nonce);
     url.searchParams.append('id', id);
     url.searchParams.append('type', type);
+    if (type === 'tv') {
+        url.searchParams.append('s', s);
+        url.searchParams.append('e', e);
+    }
 
     try {
         const response = await fetch(url);

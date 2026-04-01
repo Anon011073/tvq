@@ -37,8 +37,8 @@ function renderShowDetails(show) {
                     <span>📺 Seasons: ${show.number_of_seasons}</span>
                 </div>
                 <div class="btn-group">
-                    <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'favs', '${show.poster_path}')">❤️ Favourite</button>
-                    <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'")}', 'tv', 'watchlist', '${show.poster_path}')">📋 Watchlist</button>
+                    <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'tv', 'favs', '${show.poster_path}')">❤️ Favourite</button>
+                    <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'tv', 'watchlist', '${show.poster_path}')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
                         `<button class="btn btn-primary btn-watch" onclick="showView('watchView', {id: ${show.id}, type: 'tv'})">▶️ Watch Now</button>` :
                         `<div class="premium-upsell">
@@ -84,7 +84,7 @@ function renderEpisodes(showId, seasonNumber, episodes) {
         <h4 onclick="toggleSeason('${seasonId}')" class="season-title">Season ${seasonNumber} <small>(expand)</small></h4>
         <div id="${seasonId}" class="season-body" style="display:none;">
             ${episodes.map(ep => `
-                <div class="episode-row">
+                <div class="episode-row" onclick="showView('watchView', {id: ${showId}, type: 'tv', s: ${seasonNumber}, e: ${ep.episode_number}})">
                     <span>S${seasonNumber}E${ep.episode_number}: ${ep.name}</span>
                 </div>
             `).join('')}
