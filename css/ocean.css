@@ -1,0 +1,25 @@
+/* css/ocean.css */
+:root {
+    --bg-color: #001f3f;
+    --card-bg: #003366;
+    --text-color: #e0f2f1;
+    --accent-color: #0074d9;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.card {
+    background: var(--card-bg);
+}
+
+header {
+    background: #001a35;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+nav a:hover {
+    color: #7fdbff;
+}

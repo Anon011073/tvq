@@ -19,15 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             try {
-                $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+                // Ensure is_admin defaults to 0
+                $stmt = $pdo->prepare("INSERT INTO users (username, password, is_admin) VALUES (?, ?, 0)");
                 $stmt->execute([$username, $hashedPassword]);
                 header('Location: login.php?registered=1');
                 exit;
             } catch (PDOException $e) {
-                if ($e->getCode() == 23000 || $e->getCode() == '23000') {
+                // Handle both code 23000 and generic error 19 for uniqueness in SQLite
+                if ($e->getCode() == 23000 || $e->getCode() == '23000' || strpos($e->getMessage(), 'UNIQUE constraint failed') !== false) {
                     $error = "Username already exists.";
                 } else {
-                    $error = "An error occurred. Please try again.";
+                    $error = "An error occurred: " . $e->getMessage();
                 }
             }
         }
