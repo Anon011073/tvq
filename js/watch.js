@@ -5,12 +5,18 @@
 async function startWatch(id, type, s = 1, e = 1) {
     const container = document.getElementById('watchView');
     container.innerHTML = `
-        <button class="btn btn-secondary" onclick="showView('${type === 'tv' ? 'showDetails' : 'movieDetails'}', {id: ${id}})">⬅️ Back to Details</button>
+        <button class="btn btn-secondary" style="margin-bottom: 20px;" onclick="showView('${type === 'tv' ? 'showDetails' : 'movieDetails'}', {id: ${id}})">⬅️ Back to Details</button>
         <div class="watch-container">
             <h2>Now Watching ${type === 'tv' ? `(Season ${s} Episode ${e})` : ''}</h2>
             <div id="player-loading" class="loading">Loading secure player...</div>
             <div id="player-frame" class="video-container" style="display:none;"></div>
         </div>
+        ${type === 'tv' ? `
+            <div id="watch-episodes" class="details-section" style="margin-top: 40px;">
+                <h3>📂 Select Episode</h3>
+                <div id="watch-episodes-list" class="episodes-container"></div>
+            </div>
+        ` : ''}
     `;
 
     // Fetch secure player URL from Premium Plugin via AJAX
@@ -36,6 +42,34 @@ async function startWatch(id, type, s = 1, e = 1) {
 
             // Log watch progress
             markAsWatched(id, type, s, e);
+
+            // Load episode list if TV
+            if (type === 'tv') {
+                tmdbFetch(`/tv/${id}`).then(show => {
+                    const epList = document.getElementById('watch-episodes-list');
+                    if (epList) epList.innerHTML = '';
+                    for (let i = 1; i <= show.number_of_seasons; i++) {
+                        tmdbFetch(`/tv/${id}/season/${i}`).then(data => {
+                            const seasonId = `watch-season-${id}-${i}`;
+                            const div = document.createElement('div');
+                            div.className = 'season-block';
+                            div.innerHTML = `
+                                <h4 onclick="toggleSeason('${seasonId}')" class="season-title">Season ${i}</h4>
+                                <div id="${seasonId}" class="season-body" style="${i == s ? 'display:block;' : 'display:none;'}">
+                                    ${data.episodes.map(ep => `
+                                        <div class="episode-row ${ep.episode_number == e && i == s ? 'active' : ''}"
+                                             style="${ep.episode_number == e && i == s ? 'background: rgba(255,94,87,0.1); border-left: 3px solid #ff5e57;' : ''}"
+                                             onclick="showView('watchView', {id: ${id}, type: 'tv', s: ${i}, e: ${ep.episode_number}})">
+                                            <span>S${i}E${ep.episode_number}: ${ep.name}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                            epList.appendChild(div);
+                        });
+                    }
+                });
+            }
         } else {
             document.getElementById('player-loading').innerHTML = '<div class="error">Failed to load player. Ensure Premium Plugin is active.</div>';
         }
