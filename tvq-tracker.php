@@ -52,6 +52,7 @@ class TVQ_Tracker {
         register_setting('tvq_settings_group', 'tvq_min_role_watch');
         register_setting('tvq_settings_group', 'tvq_grid_columns');
         register_setting('tvq_settings_group', 'tvq_premium_buy_url');
+        register_setting('tvq_settings_group', 'tvq_admin_news');
         register_setting('tvq_settings_group', 'tvq_custom_css');
     }
 
@@ -179,6 +180,13 @@ class TVQ_Tracker {
                         </td>
                     </tr>
                     <tr valign="top">
+                        <th scope="row">Admin News / Updates</th>
+                        <td>
+                            <textarea name="tvq_admin_news" rows="3" cols="50" class="large-text" placeholder="Share updates with your users..."><?php echo esc_textarea(get_option('tvq_admin_news')); ?></textarea>
+                            <p class="description">This message will appear on the user's TVQ Dashboard.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
                         <th scope="row">Custom CSS</th>
                         <td>
                             <textarea name="tvq_custom_css" rows="5" cols="50" class="large-text"><?php echo esc_textarea(get_option('tvq_custom_css')); ?></textarea>
@@ -208,7 +216,10 @@ class TVQ_Tracker {
         $this->enqueue_scripts();
         ?>
         <div class="wrap tvq-tracker-container light-mode">
-            <h1>📺 My TVQ Tracker Dashboard</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>📺 My TVQ Tracker Dashboard</h1>
+                <button id="themeToggle" class="button">🌓 Toggle Dark/Light Mode</button>
+            </div>
 
             <div class="tvq-status-bar" style="background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 25px; display: flex; gap: 30px;">
                 <span><strong>TV Shows Tracked:</strong> <?php echo count(array_filter($watchlist, function($i){return isset($i['type']) && $i['type'] === 'tv';})); ?></span>
@@ -217,6 +228,14 @@ class TVQ_Tracker {
             </div>
 
             <div class="tvq-profile-data" style="max-width: 1200px;">
+                <!-- Admin News Section -->
+                <?php $news = get_option('tvq_admin_news'); if(!empty($news)): ?>
+                <section id="tvq-admin-news" style="margin-bottom: 25px; background: #e7f3ff; padding: 20px; border-radius: 12px; border: 1px solid #2196f3;">
+                    <h3>📢 Latest Updates</h3>
+                    <div class="news-content"><?php echo wpautop(esc_html($news)); ?></div>
+                </section>
+                <?php endif; ?>
+
                 <!-- Live Upcoming Section -->
                 <section id="upcoming-notifications" style="margin-bottom: 40px; background: #fff9f9; padding: 20px; border-radius: 12px; border: 1px solid #ff5e57;">
                     <h3>📅 Upcoming Episodes (Next 7 Days)</h3>
@@ -458,7 +477,7 @@ class TVQ_Tracker {
                     <a href="#" data-view="favourites">⭐ Favourites</a>
                     <a href="#" data-view="watchlist">📋 Watchlist</a>
                     <a href="#" data-view="profile">👤 Profile</a>
-                    <button id="themeToggle" class="theme-toggle">🌙 Toggle Theme</button>
+                    <a href="#" data-view="help">❓ Help</a>
                 </div>
             </nav>
 
@@ -515,6 +534,28 @@ class TVQ_Tracker {
                         <section id="favouritesView" style="display: none;"></section>
                         <section id="watchlistView" style="display: none;"></section>
                         <section id="watchView" style="display: none;"></section>
+                        <section id="helpView" style="display: none;">
+                            <h2>❓ TVQ Tracker Help & Usage</h2>
+                            <div class="help-content" style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 12px; line-height: 1.6;">
+                                <h3>🚀 Getting Started</h3>
+                                <p>Welcome to TVQ Tracker! Use the navigation bar at the top to switch between TV Shows and Movies. You can search for specific titles using the search bar.</p>
+
+                                <h3>⭐ Favourites & Watchlist</h3>
+                                <p>Click on any show or movie to see its details. You can add items to your <strong>Favourites</strong> or your <strong>Watchlist</strong> by clicking the buttons on the details page. These are saved to your account and can be accessed from the navigation menu or your profile dashboard.</p>
+
+                                <h3>📊 Tracking Your Progress</h3>
+                                <p>On any TV show page, you'll see a <strong>My Episode Progress</strong> section. Enter the Season and Episode number of the last episode you watched and click "Save Progress". The "Watch Now" button will then automatically suggest the next episode for you.</p>
+
+                                <h3>▶️ Watching Content</h3>
+                                <p>If you have the premium addon active and permission from the site administrator, you will see a <strong>Watch Now</strong> button. This will open a secure player. You can also select specific episodes to watch directly from the list on the details page or from the player page itself.</p>
+
+                                <h3>📅 Using the Calendar</h3>
+                                <p>The <strong>Calendar</strong> view shows you which shows from your watchlist have new episodes airing in the next 7 days. This helps you stay up to date with your favorite series.</p>
+
+                                <h3>🌓 Theme Settings</h3>
+                                <p>You can toggle between Dark and Light mode from your <strong>My TVQ Tracker</strong> dashboard located in your WordPress Profile menu.</p>
+                            </div>
+                        </section>
                     </div>
                 </main>
             </div>

@@ -45,29 +45,39 @@ async function startWatch(id, type, s = 1, e = 1) {
 
             // Load episode list if TV
             if (type === 'tv') {
-                tmdbFetch(`/tv/${id}`).then(show => {
+                tmdbFetch(`/tv/${id}`).then(async show => {
                     const epList = document.getElementById('watch-episodes-list');
-                    if (epList) epList.innerHTML = '';
+                    if (!epList) return;
+                    epList.innerHTML = '<p class="loading">Loading episodes...</p>';
+
+                    const seasonPromises = [];
                     for (let i = 1; i <= show.number_of_seasons; i++) {
-                        tmdbFetch(`/tv/${id}/season/${i}`).then(data => {
-                            const seasonId = `watch-season-${id}-${i}`;
-                            const div = document.createElement('div');
-                            div.className = 'season-block';
-                            div.innerHTML = `
-                                <h4 onclick="toggleSeason('${seasonId}')" class="season-title">Season ${i}</h4>
-                                <div id="${seasonId}" class="season-body" style="${i == s ? 'display:block;' : 'display:none;'}">
-                                    ${data.episodes.map(ep => `
-                                        <div class="episode-row ${ep.episode_number == e && i == s ? 'active' : ''}"
-                                             style="${ep.episode_number == e && i == s ? 'background: rgba(255,94,87,0.1); border-left: 3px solid #ff5e57;' : ''}"
-                                             onclick="showView('watchView', {id: ${id}, type: 'tv', s: ${i}, e: ${ep.episode_number}})">
-                                            <span>S${i}E${ep.episode_number}: ${ep.name}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            `;
-                            epList.appendChild(div);
-                        });
+                        seasonPromises.push(tmdbFetch(`/tv/${id}/season/${i}`));
                     }
+
+                    const allSeasons = await Promise.all(seasonPromises);
+                    allSeasons.sort((a, b) => a.season_number - b.season_number);
+
+                    epList.innerHTML = '';
+                    allSeasons.forEach(data => {
+                        const i = data.season_number;
+                        const seasonId = `watch-season-${id}-${i}`;
+                        const div = document.createElement('div');
+                        div.className = 'season-block';
+                        div.innerHTML = `
+                            <h4 onclick="toggleSeason('${seasonId}')" class="season-title" style="background: #34495e; color: #fff; padding: 10px; border-radius: 6px; margin-bottom: 5px; border-left: 5px solid #ff5e57;">Season ${i}</h4>
+                            <div id="${seasonId}" class="season-body" style="${i == s ? 'display:block;' : 'display:none;'}">
+                                ${data.episodes.map(ep => `
+                                    <div class="episode-row ${ep.episode_number == e && i == s ? 'active' : ''}"
+                                         style="${ep.episode_number == e && i == s ? 'background: rgba(255,94,87,0.1); border-left: 3px solid #ff5e57;' : ''}"
+                                         onclick="showView('watchView', {id: ${id}, type: 'tv', s: ${i}, e: ${ep.episode_number}})">
+                                        <span>S${i}E${ep.episode_number}: ${ep.name}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        epList.appendChild(div);
+                    });
                 });
             }
         } else {

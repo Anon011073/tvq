@@ -40,7 +40,7 @@ function renderShowDetails(show) {
                     <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'tv', 'favs', '${show.poster_path}')">❤️ Favourite</button>
                     <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'tv', 'watchlist', '${show.poster_path}')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
-                        `<button class="btn btn-primary btn-watch" onclick="showView('watchView', {id: ${show.id}, type: 'tv'})">▶️ Watch Now</button>` :
+                        `<button id="mainWatchBtn" class="btn btn-primary btn-watch" onclick="watchNextEpisode(${show.id})">▶️ Watch Now</button>` :
                         `<div class="premium-upsell">
                             <span class="premium-notice">Watch requires Premium Plugin</span>
                             <a href="${tvq_settings.buy_url}" target="_blank" class="btn btn-small btn-premium">🛒 Get Premium</a>
@@ -111,6 +111,23 @@ async function saveShowProgress(id) {
 
     await saveUserData('watch_progress', progress);
     document.getElementById('progressMessage').innerText = `Progress saved! Last Watched: Season ${s}, Episode ${e}`;
+
+    // Update main watch button to reflect progress
+    const watchBtn = document.getElementById('mainWatchBtn');
+    if (watchBtn) watchBtn.onclick = () => watchNextEpisode(id);
+}
+
+async function watchNextEpisode(id) {
+    const progress = await getUserData('watch_progress');
+    const showProgress = progress.find(p => p.id == id);
+
+    let s = 1, e = 1;
+    if (showProgress) {
+        s = showProgress.s || 1;
+        e = (showProgress.e || 0) + 1;
+    }
+
+    showView('watchView', { id, type: 'tv', s, e });
 }
 
 function renderEpisodes(showId, seasonNumber, episodes) {
