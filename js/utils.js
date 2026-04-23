@@ -155,7 +155,8 @@ async function toggleMediaStorage(id, name, type, key, posterPath = '') {
     if (document.getElementById('movieFavBtn') && key === 'favs') updateButtonStates(id, 'favs', 'movieFavBtn', !exists);
     if (document.getElementById('movieWatchlistBtn') && key === 'watchlist') updateButtonStates(id, 'watchlist', 'movieWatchlistBtn', !exists);
 
-    await saveUserData(key, data);
+    // Save in background (non-blocking)
+    saveUserData(key, data);
 }
 
 async function updateButtonStates(id, storageKey, btnId, isForcedValue = null) {

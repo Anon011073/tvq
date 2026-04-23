@@ -25,6 +25,7 @@ class TVQ_Tracker {
         add_action('personal_options_update', array($this, 'save_user_profile_fields'));
         add_action('edit_user_profile_update', array($this, 'save_user_profile_fields'));
         add_action('admin_notices', array($this, 'display_upcoming_notifications'));
+        add_action('wp_dashboard_setup', array($this, 'add_dashboard_widgets'));
     }
 
     public function activate() {
@@ -42,6 +43,7 @@ class TVQ_Tracker {
 
     public function register_settings() {
         register_setting('tvq_settings_group', 'tvq_tmdb_api_key');
+        register_setting('tvq_settings_group', 'tvq_global_theme');
         register_setting('tvq_settings_group', 'tvq_default_view');
         register_setting('tvq_settings_group', 'tvq_default_language');
         register_setting('tvq_settings_group', 'tvq_default_country');
@@ -99,6 +101,15 @@ class TVQ_Tracker {
                         <td>
                             <input type="text" name="tvq_tmdb_api_key" value="<?php echo esc_attr(get_option('tvq_tmdb_api_key')); ?>" class="regular-text" />
                             <p class="description">Enter your TMDB API v3 key. You can get one for free at <a href="https://www.themoviedb.org/settings/api" target="_blank">The Movie Database (TMDB)</a>.</p>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Global Theme Color</th>
+                        <td>
+                            <select name="tvq_global_theme">
+                                <option value="dark" <?php selected(get_option('tvq_global_theme'), 'dark'); ?>>Dark Mode</option>
+                                <option value="light" <?php selected(get_option('tvq_global_theme'), 'light'); ?>>Light Mode</option>
+                            </select>
                         </td>
                     </tr>
                     <tr valign="top">
@@ -215,11 +226,8 @@ class TVQ_Tracker {
 
         $this->enqueue_scripts();
         ?>
-        <div class="wrap tvq-tracker-container light-mode">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>📺 My TVQ Tracker Dashboard</h1>
-                <button id="themeToggle" class="button">🌓 Toggle Dark/Light Mode</button>
-            </div>
+        <div class="wrap tvq-tracker-container <?php echo esc_attr(get_option('tvq_global_theme', 'dark')); ?>-mode">
+            <h1>📺 My TVQ Tracker Dashboard</h1>
 
             <div class="tvq-status-bar" style="background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 25px; display: flex; gap: 30px;">
                 <span><strong>TV Shows Tracked:</strong> <?php echo count(array_filter($watchlist, function($i){return isset($i['type']) && $i['type'] === 'tv';})); ?></span>
@@ -253,7 +261,6 @@ class TVQ_Tracker {
                                 if(isset($item['type']) && $item['type'] === 'tv'):
                                     $id = isset($item['id']) ? $item['id'] : '';
                                     $name = isset($item['name']) ? $item['name'] : (isset($item['title']) ? $item['title'] : 'Unknown');
-                                    $poster_path = (isset($item['poster_path']) && $item['poster_path'] !== 'null' && !empty($item['poster_path'])) ? $item['poster_path'] : '';
                                     $poster_path = (isset($item['poster_path']) && $item['poster_path'] !== 'null' && !empty($item['poster_path'])) ? $item['poster_path'] : '';
                                     $poster = !empty($poster_path) ? 'https://image.tmdb.org/t/p/w200' . $poster_path : 'https://placehold.co/200x300?text=No+Image';
                             ?>
@@ -451,6 +458,24 @@ class TVQ_Tracker {
         }
     }
 
+    public function add_dashboard_widgets() {
+        wp_add_dashboard_widget(
+            'tvq_news_widget',
+            '📺 TVQ Tracker Updates',
+            array($this, 'news_widget_display')
+        );
+    }
+
+    public function news_widget_display() {
+        $news = get_option('tvq_admin_news');
+        if (!empty($news)) {
+            echo wpautop(esc_html($news));
+        } else {
+            echo '<p>No new updates at this time. Check back later!</p>';
+        }
+        echo '<hr><p><a href="' . admin_url('profile.php?page=my-tvq-tracker') . '" class="button">Go to TVQ Dashboard</a></p>';
+    }
+
     public function save_user_data() {
         check_ajax_referer('tvq_nonce', 'nonce');
         if (is_user_logged_in()) update_user_meta(get_current_user_id(), sanitize_text_field($_POST['key']), $_POST['data']);
@@ -502,17 +527,22 @@ class TVQ_Tracker {
                                 </select>
                             </div>
                             <div class="filter-group"><label>Countries</label>
-                                <div id="countryFilter" class="multi-select-container" style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; border: 1px solid #444; max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;">
-                                    <label><input type="checkbox" value="US"> 🇺🇸 USA</label>
-                                    <label><input type="checkbox" value="GB"> 🇬🇧 UK</label>
-                                    <label><input type="checkbox" value="CA"> 🇨🇦 Canada</label>
-                                    <label><input type="checkbox" value="AU"> 🇦🇺 Australia</label>
-                                    <label><input type="checkbox" value="KR"> 🇰🇷 South Korea</label>
-                                    <label><input type="checkbox" value="JP"> 🇯🇵 Japan</label>
-                                    <label><input type="checkbox" value="DE"> 🇩🇪 Germany</label>
-                                    <label><input type="checkbox" value="FR"> 🇫🇷 France</label>
-                                    <label><input type="checkbox" value="ES"> 🇪🇸 Spain</label>
-                                    <label><input type="checkbox" value="MX"> 🇲🇽 Mexico</label>
+                                <div class="dropdown-multi" id="countryDropdown">
+                                    <div class="dropdown-multi-label" onclick="toggleMultiDropdown('countryDropdown')">All Countries</div>
+                                    <div class="dropdown-multi-content" id="countryFilter">
+                                        <label class="all-opt"><input type="checkbox" value="" checked> All Countries</label>
+                                        <hr style="margin: 5px 0; border: 0; border-top: 1px solid #444;">
+                                        <label><input type="checkbox" value="US"> 🇺🇸 USA</label>
+                                        <label><input type="checkbox" value="GB"> 🇬🇧 UK</label>
+                                        <label><input type="checkbox" value="CA"> 🇨🇦 Canada</label>
+                                        <label><input type="checkbox" value="AU"> 🇦🇺 Australia</label>
+                                        <label><input type="checkbox" value="KR"> 🇰🇷 South Korea</label>
+                                        <label><input type="checkbox" value="JP"> 🇯🇵 Japan</label>
+                                        <label><input type="checkbox" value="DE"> 🇩🇪 Germany</label>
+                                        <label><input type="checkbox" value="FR"> 🇫🇷 France</label>
+                                        <label><input type="checkbox" value="ES"> 🇪🇸 Spain</label>
+                                        <label><input type="checkbox" value="MX"> 🇲🇽 Mexico</label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="filter-group checkbox-group">
@@ -603,7 +633,8 @@ class TVQ_Tracker {
             'default_sort' => get_option('tvq_default_sort', 'popularity.desc'),
             'english_only' => get_option('tvq_english_only_default') == '1',
             'trending_enabled' => get_option('tvq_enable_trending') == '1',
-            'trending_type' => get_option('tvq_trending_type', 'trending')
+            'trending_type' => get_option('tvq_trending_type', 'trending'),
+            'global_theme' => get_option('tvq_global_theme', 'dark')
         ));
     }
 }

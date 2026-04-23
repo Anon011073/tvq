@@ -7,6 +7,19 @@ let currentGenre = '';
 let currentSort = 'popularity.desc';
 let currentMediaType = 'tv'; // 'tv' or 'movie'
 
+// --- Dropdown Helpers ---
+function toggleMultiDropdown(id) {
+    const el = document.querySelector(`#${id} .dropdown-multi-content`);
+    if (el) el.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown-multi')) {
+        document.querySelectorAll('.dropdown-multi-content').forEach(d => d.classList.remove('show'));
+    }
+});
+
 // --- View Router ---
 
 function showView(viewId, params = {}) {
@@ -87,6 +100,12 @@ function loadMainGrid(page = 1, shouldScroll = true) {
     currentPage = page;
     const endpoint = currentMediaType === 'tv' ? '/discover/tv' : '/discover/movie';
 
+    // Hide trending if filtering by country to show pure results
+    const countryFilter = document.getElementById('countryFilter');
+    const hasCountryFilter = countryFilter && countryFilter.querySelectorAll('input:checked').length > 0;
+    const trend = document.getElementById('trendingSection');
+    if (trend) trend.style.display = (hasCountryFilter || currentPage > 1) ? 'none' : 'block';
+
     let params = {
         page: page,
         sort_by: currentSort
@@ -108,12 +127,19 @@ function loadMainGrid(page = 1, shouldScroll = true) {
     }
 
     const countryFilter = document.getElementById('countryFilter');
+    const countryLabel = document.querySelector('#countryDropdown .dropdown-multi-label');
+
     if (countryFilter) {
-        const selected = Array.from(countryFilter.querySelectorAll('input:checked')).map(i => i.value);
+        const selected = Array.from(countryFilter.querySelectorAll('input:checked'))
+                            .map(i => i.value)
+                            .filter(v => v !== ''); // Remove 'All' value from API call
+
         if (selected.length > 0) {
-            params['with_origin_country'] = selected.join('|'); // pipe for OR in TMDB API
-        } else if (window.tvq_settings.default_country) {
-            params['with_origin_country'] = window.tvq_settings.default_country;
+            params['with_origin_country'] = selected.join('|');
+            if (countryLabel) countryLabel.textContent = selected.length > 1 ? `${selected.length} Selected` : selected[0];
+        } else {
+            if (countryLabel) countryLabel.textContent = 'All Countries';
+            // Note: Default country is handled by pre-checking boxes on init
         }
     }
 
@@ -224,9 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const countryFilter = document.getElementById('countryFilter');
     if (countryFilter && window.tvq_settings.default_country) {
         const defaults = window.tvq_settings.default_country.split('|');
+        let hasDefaults = false;
         countryFilter.querySelectorAll('input').forEach(i => {
-            if (defaults.includes(i.value)) i.checked = true;
+            if (i.value !== '' && defaults.includes(i.value)) {
+                i.checked = true;
+                hasDefaults = true;
+            }
         });
+        if (hasDefaults) {
+            const allBox = countryFilter.querySelector('input[value=""]');
+            if (allBox) allBox.checked = false;
+        }
     }
     // Navigation Links
     document.querySelectorAll('.tvq-nav a[data-view]').forEach(link => {
@@ -270,7 +304,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const countryFilterContainer = document.getElementById('countryFilter');
     if (countryFilterContainer) {
-        countryFilterContainer.addEventListener('change', () => loadMainGrid(1, false));
+        countryFilterContainer.addEventListener('change', (e) => {
+            const boxes = countryFilterContainer.querySelectorAll('input');
+            const clicked = e.target;
+
+            if (clicked.value === '') { // All selected
+                if (clicked.checked) boxes.forEach(b => { if(b !== clicked) b.checked = false; });
+            } else { // Specific country selected
+                if (clicked.checked) countryFilterContainer.querySelector('input[value=""]').checked = false;
+            }
+
+            // If none checked, re-check All
+            if (Array.from(boxes).filter(b => b.checked).length === 0) {
+                countryFilterContainer.querySelector('input[value=""]').checked = true;
+            }
+
+            loadMainGrid(1, false);
+        });
     }
 
     const genreSelect = document.getElementById('genreSelect');
