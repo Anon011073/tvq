@@ -107,11 +107,14 @@ function loadMainGrid(page = 1, shouldScroll = true) {
         params['with_genres'] = currentGenre;
     }
 
-    const countrySelect = document.getElementById('countrySelect');
-    if (countrySelect && countrySelect.value) {
-        params['with_origin_country'] = countrySelect.value;
-    } else if (window.tvq_settings.default_country) {
-        params['with_origin_country'] = window.tvq_settings.default_country;
+    const countryFilter = document.getElementById('countryFilter');
+    if (countryFilter) {
+        const selected = Array.from(countryFilter.querySelectorAll('input:checked')).map(i => i.value);
+        if (selected.length > 0) {
+            params['with_origin_country'] = selected.join('|'); // pipe for OR in TMDB API
+        } else if (window.tvq_settings.default_country) {
+            params['with_origin_country'] = window.tvq_settings.default_country;
+        }
     }
 
     tmdbFetch(endpoint, params)
@@ -218,8 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const engEl = document.getElementById('englishOnly');
     if (engEl) engEl.checked = window.tvq_settings.english_only;
 
-    const countryEl = document.getElementById('countrySelect');
-    if (countryEl) countryEl.value = window.tvq_settings.default_country || '';
+    const countryFilter = document.getElementById('countryFilter');
+    if (countryFilter && window.tvq_settings.default_country) {
+        const defaults = window.tvq_settings.default_country.split('|');
+        countryFilter.querySelectorAll('input').forEach(i => {
+            if (defaults.includes(i.value)) i.checked = true;
+        });
+    }
     // Navigation Links
     document.querySelectorAll('.tvq-nav a[data-view]').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -260,9 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
         englishOnly.addEventListener('change', () => loadMainGrid(1, false));
     }
 
-    const countrySelect = document.getElementById('countrySelect');
-    if (countrySelect) {
-        countrySelect.addEventListener('change', () => loadMainGrid(1, false));
+    const countryFilterContainer = document.getElementById('countryFilter');
+    if (countryFilterContainer) {
+        countryFilterContainer.addEventListener('change', () => loadMainGrid(1, false));
     }
 
     const genreSelect = document.getElementById('genreSelect');

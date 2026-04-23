@@ -501,11 +501,19 @@ class TVQ_Tracker {
                                     <option value="10759">Action</option><option value="16">Animation</option><option value="35">Comedy</option><option value="80">Crime</option><option value="99">Documentary</option><option value="18">Drama</option><option value="10751">Family</option><option value="10765">Sci-Fi</option><option value="10766">Soap</option><option value="10767">Talk</option>
                                 </select>
                             </div>
-                            <div class="filter-group"><label>Country</label>
-                                <select id="countrySelect" class="filter-select">
-                                    <option value="">All Countries</option>
-                                    <option value="US">🇺🇸 USA</option><option value="GB">🇬🇧 UK</option><option value="CA">🇨🇦 Canada</option><option value="AU">🇦🇺 Australia</option><option value="KR">🇰🇷 South Korea</option><option value="JP">🇯🇵 Japan</option>
-                                </select>
+                            <div class="filter-group"><label>Countries</label>
+                                <div id="countryFilter" class="multi-select-container" style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; border: 1px solid #444; max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;">
+                                    <label><input type="checkbox" value="US"> 🇺🇸 USA</label>
+                                    <label><input type="checkbox" value="GB"> 🇬🇧 UK</label>
+                                    <label><input type="checkbox" value="CA"> 🇨🇦 Canada</label>
+                                    <label><input type="checkbox" value="AU"> 🇦🇺 Australia</label>
+                                    <label><input type="checkbox" value="KR"> 🇰🇷 South Korea</label>
+                                    <label><input type="checkbox" value="JP"> 🇯🇵 Japan</label>
+                                    <label><input type="checkbox" value="DE"> 🇩🇪 Germany</label>
+                                    <label><input type="checkbox" value="FR"> 🇫🇷 France</label>
+                                    <label><input type="checkbox" value="ES"> 🇪🇸 Spain</label>
+                                    <label><input type="checkbox" value="MX"> 🇲🇽 Mexico</label>
+                                </div>
                             </div>
                             <div class="filter-group checkbox-group">
                                 <input type="checkbox" id="englishOnly"> <label for="englishOnly">English Only</label>
