@@ -22,23 +22,30 @@ function fetchShowDetails(id) {
 
 function renderShowDetails(show) {
     const container = document.getElementById('showDetails');
+    if (!show || !show.id) {
+        container.innerHTML = '<div class="error">Failed to load show details. Please try again.</div>';
+        return;
+    }
+
+    const name = show.name || 'Unknown Show';
+    const escapedName = name.replace(/'/g, "\\'").replace(/"/g, "&quot;");
     const poster = show.poster_path ? `https://image.tmdb.org/t/p/w300${show.poster_path}` : 'https://placehold.co/300x450?text=No+Image';
 
     container.innerHTML = `
         <button class="btn btn-secondary back-btn" onclick="showView('mainContent')">⬅️ Back</button>
         <section class="hero">
-            <img src="${poster}" alt="${show.name}" class="poster">
+            <img src="${poster}" alt="${name}" class="poster">
             <div class="hero-text">
-                <h1>${show.name}</h1>
-                <p class="overview">${show.overview}</p>
+                <h1>${name}</h1>
+                <p class="overview">${show.overview || 'No overview available.'}</p>
                 <div class="meta-info">
-                    <span>📅 First Air: ${show.first_air_date}</span>
-                    <span>⭐ Rating: ${show.vote_average}</span>
-                    <span>📺 Seasons: ${show.number_of_seasons}</span>
+                    <span>📅 First Air: ${show.first_air_date || 'N/A'}</span>
+                    <span>⭐ Rating: ${show.vote_average || 'N/A'}</span>
+                    <span>📺 Seasons: ${show.number_of_seasons || 'N/A'}</span>
                 </div>
                 <div class="btn-group">
-                    <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'tv', 'favs', '${show.poster_path}')">❤️ Favourite</button>
-                    <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${show.name.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'tv', 'watchlist', '${show.poster_path}')">📋 Watchlist</button>
+                    <button id="favBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${escapedName}', 'tv', 'favs', '${show.poster_path}')">❤️ Favourite</button>
+                    <button id="watchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${show.id}, '${escapedName}', 'tv', 'watchlist', '${show.poster_path}')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
                         `<button id="mainWatchBtn" class="btn btn-primary btn-watch" onclick="watchNextEpisode(${show.id})">▶️ Watch Now</button>` :
                         `<div class="premium-upsell">

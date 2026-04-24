@@ -100,11 +100,18 @@ function loadMainGrid(page = 1, shouldScroll = true) {
     currentPage = page;
     const endpoint = currentMediaType === 'tv' ? '/discover/tv' : '/discover/movie';
 
-    // Hide trending if filtering by country to show pure results
-    const countryFilter = document.getElementById('countryFilter');
-    const hasCountryFilter = countryFilter && countryFilter.querySelectorAll('input:checked').length > 0;
+    // Hide trending if filtering by country or genre to show pure results
+    const countryFilterContainer = document.getElementById('countryFilter');
+    const hasCountryFilter = countryFilterContainer && Array.from(countryFilterContainer.querySelectorAll('input:checked')).some(i => i.value !== '');
+    const hasGenreFilter = !!currentGenre;
     const trend = document.getElementById('trendingSection');
-    if (trend) trend.style.display = (hasCountryFilter || currentPage > 1) ? 'none' : 'block';
+    if (trend) {
+        if (hasCountryFilter || hasGenreFilter || currentPage > 1 || !!document.getElementById('searchInput').value) {
+            trend.style.display = 'none';
+        } else if (window.tvq_settings.trending_enabled) {
+            trend.style.display = 'block';
+        }
+    }
 
     let params = {
         page: page,
@@ -126,20 +133,28 @@ function loadMainGrid(page = 1, shouldScroll = true) {
         params['with_genres'] = currentGenre;
     }
 
-    const countryFilter = document.getElementById('countryFilter');
     const countryLabel = document.querySelector('#countryDropdown .dropdown-multi-label');
 
-    if (countryFilter) {
-        const selected = Array.from(countryFilter.querySelectorAll('input:checked'))
-                            .map(i => i.value)
-                            .filter(v => v !== ''); // Remove 'All' value from API call
+    if (countryFilterContainer) {
+        const selectedBoxes = Array.from(countryFilterContainer.querySelectorAll('input:checked'));
+        const selectedValues = selectedBoxes.map(i => i.value).filter(v => v !== '');
 
-        if (selected.length > 0) {
-            params['with_origin_country'] = selected.join('|');
-            if (countryLabel) countryLabel.textContent = selected.length > 1 ? `${selected.length} Selected` : selected[0];
+        if (selectedValues.length > 0) {
+            params['with_origin_country'] = selectedValues.join('|');
+            if (countryLabel) {
+                if (selectedValues.length === 1) {
+                    const label = selectedBoxes.find(b => b.value !== '').parentElement.textContent.trim();
+                    countryLabel.textContent = label;
+                } else {
+                    countryLabel.textContent = `${selectedValues.length} Countries`;
+                }
+            }
         } else {
             if (countryLabel) countryLabel.textContent = 'All Countries';
-            // Note: Default country is handled by pre-checking boxes on init
+            // If nothing selected, check if we have a default to apply
+            if (window.tvq_settings.default_country) {
+                params['with_origin_country'] = window.tvq_settings.default_country;
+            }
         }
     }
 

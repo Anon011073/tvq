@@ -22,23 +22,30 @@ function fetchMovieDetails(id) {
 
 function renderMovieDetails(movie) {
     const container = document.getElementById('movieDetails');
+    if (!movie || !movie.id) {
+        container.innerHTML = '<div class="error">Failed to load movie details. Please try again.</div>';
+        return;
+    }
+
+    const title = movie.title || 'Unknown Movie';
+    const escapedTitle = title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
     const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://placehold.co/300x450?text=No+Image';
 
     container.innerHTML = `
         <button class="btn btn-secondary back-btn" onclick="showView('mainContent')">⬅️ Back</button>
         <section class="hero">
-            <img src="${poster}" alt="${movie.title}" class="poster">
+            <img src="${poster}" alt="${title}" class="poster">
             <div class="hero-text">
-                <h1>${movie.title}</h1>
-                <p class="overview">${movie.overview}</p>
+                <h1>${title}</h1>
+                <p class="overview">${movie.overview || 'No overview available.'}</p>
                 <div class="meta-info">
-                    <span>📅 Release Date: ${movie.release_date}</span>
-                    <span>⭐ Rating: ${movie.vote_average}</span>
-                    <span>🕒 Runtime: ${movie.runtime} min</span>
+                    <span>📅 Release Date: ${movie.release_date || 'N/A'}</span>
+                    <span>⭐ Rating: ${movie.vote_average || 'N/A'}</span>
+                    <span>🕒 Runtime: ${movie.runtime || 'N/A'} min</span>
                 </div>
                 <div class="btn-group">
-                    <button id="movieFavBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${movie.title.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'movie', 'favs', '${movie.poster_path}')">❤️ Favourite</button>
-                    <button id="movieWatchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${movie.title.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', 'movie', 'watchlist', '${movie.poster_path}')">📋 Watchlist</button>
+                    <button id="movieFavBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${escapedTitle}', 'movie', 'favs', '${movie.poster_path}')">❤️ Favourite</button>
+                    <button id="movieWatchlistBtn" class="btn btn-secondary" onclick="toggleMediaStorage(${movie.id}, '${escapedTitle}', 'movie', 'watchlist', '${movie.poster_path}')">📋 Watchlist</button>
                     ${tvq_settings.can_watch ?
                         `<button class="btn btn-primary btn-watch" onclick="showView('watchView', {id: ${movie.id}, type: 'movie'})">▶️ Watch Now</button>` :
                         `<div class="premium-upsell">

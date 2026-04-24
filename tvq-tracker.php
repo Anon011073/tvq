@@ -26,6 +26,7 @@ class TVQ_Tracker {
         add_action('edit_user_profile_update', array($this, 'save_user_profile_fields'));
         add_action('admin_notices', array($this, 'display_upcoming_notifications'));
         add_action('wp_dashboard_setup', array($this, 'add_dashboard_widgets'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
     }
 
     public function activate() {
@@ -214,6 +215,11 @@ class TVQ_Tracker {
         add_submenu_page('profile.php', 'My TVQ Tracker', 'My TVQ Tracker', 'read', 'my-tvq-tracker', array($this, 'my_tvq_page'));
     }
 
+    public function enqueue_admin_assets($hook) {
+        if ($hook !== 'profile_page_my-tvq-tracker') return;
+        $this->enqueue_scripts();
+    }
+
     public function my_tvq_page() {
         $user_id = get_current_user_id();
         $favs = get_user_meta($user_id, 'tvq_favs', true);
@@ -223,8 +229,6 @@ class TVQ_Tracker {
         $watchlist = get_user_meta($user_id, 'tvq_watchlist', true);
         if (is_string($watchlist)) $watchlist = json_decode($watchlist, true);
         if (!is_array($watchlist)) $watchlist = array();
-
-        $this->enqueue_scripts();
         ?>
         <div class="wrap tvq-tracker-container <?php echo esc_attr(get_option('tvq_global_theme', 'dark')); ?>-mode">
             <h1>📺 My TVQ Tracker Dashboard</h1>
@@ -438,13 +442,44 @@ class TVQ_Tracker {
         check_ajax_referer('tvq_nonce', 'nonce');
         $api_key = get_option('tvq_tmdb_api_key');
         if (!$api_key) wp_send_json_error('API Key missing', 400);
-        $endpoint = sanitize_text_field($_GET['endpoint']);
-        $params = $_GET; unset($params['action'], $params['endpoint'], $params['nonce']);
+
+        $endpoint = isset($_GET['endpoint']) ? sanitize_text_field($_GET['endpoint']) : '';
+        if (empty($endpoint)) wp_send_json_error('Endpoint missing', 400);
+
+        // Parse query string manually to preserve dots in parameter keys (e.g. origin_country.mode)
+        $params = array();
+        $query_string = $_SERVER['QUERY_STRING'];
+        if ($query_string) {
+            $pairs = explode('&', $query_string);
+            foreach ($pairs as $pair) {
+                $parts = explode('=', $pair, 2);
+                if (count($parts) === 2) {
+                    $key = urldecode($parts[0]);
+                    $value = urldecode($parts[1]);
+                    if ($key !== 'action' && $key !== 'endpoint' && $key !== 'nonce' && $key !== 'ver') {
+                        $params[$key] = $value;
+                    }
+                }
+            }
+        }
         $params['api_key'] = $api_key;
+
         $url = add_query_arg($params, 'https://api.themoviedb.org/3' . $endpoint);
-        $response = wp_remote_get($url);
-        if (is_wp_error($response)) wp_send_json_error($response->get_error_message(), 500);
-        wp_send_json(json_decode(wp_remote_retrieve_body($response)));
+
+        $response = wp_remote_get($url, array('timeout' => 15));
+
+        if (is_wp_error($response)) {
+            wp_send_json_error($response->get_error_message(), 500);
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $status = wp_remote_retrieve_response_code($response);
+
+        if ($status >= 400) {
+            wp_send_json_error('TMDB API Error: ' . $body, $status);
+        }
+
+        wp_send_json(json_decode($body));
     }
 
     public function display_upcoming_notifications() {
