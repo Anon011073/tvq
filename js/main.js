@@ -1,95 +1,200 @@
 /**
- * js/main.js - Homepage Logic
+ * js/main.js - Central Router and Discovery Logic
  */
 
 let currentPage = 1;
 let currentGenre = '';
-let currentSort = 'popularity.desc'; // Default = Popular
+let currentSort = 'popularity.desc';
+let currentMediaType = 'tv'; // 'tv' or 'movie'
 
-// Restored + Updated renderShows function (horizontal sections)
-function renderShows(shows, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-
-  shows.slice(0, 24).forEach(show => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <img src="https://image.tmdb.org/t/p/w200${show.poster_path}" alt="${show.name}" />
-      <h3>${show.name}</h3>
-      <p>⭐ ${show.vote_average}</p>
-    `;
-    div.addEventListener('click', () => {
-      window.location.href = `show.php?id=${show.id}`;
-    });
-    container.appendChild(div);
-  });
-
-  if (typeof addScrollArrows === 'function') {
-    addScrollArrows(container);
-  }
+// --- Dropdown Helpers ---
+function toggleMultiDropdown(id) {
+    const el = document.querySelector(`#${id} .dropdown-multi-content`);
+    if (el) el.classList.toggle('show');
 }
 
-// Unified Grid Rendering
-function renderGrid(shows, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
+// Close dropdown when clicking outside
+window.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown-multi')) {
+        document.querySelectorAll('.dropdown-multi-content').forEach(d => d.classList.remove('show'));
+    }
+});
 
-  shows.forEach(show => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <img src="https://image.tmdb.org/t/p/w200${show.poster_path}" alt="${show.name}" onerror="this.src='https://placehold.co/200x300?text=No+Image'"/>
-      <h3>${show.name}</h3>
-      <p>⭐ ${show.vote_average}</p>
-    `;
-    div.addEventListener('click', () => {
-      window.location.href = `show.php?id=${show.id}`;
+// --- View Router ---
+
+function showView(viewId, params = {}) {
+    const sections = ['searchSection', 'mainContent', 'showDetails', 'movieDetails', 'calendarView', 'favouritesView', 'watchlistView', 'watchView', 'trendingSection'];
+    sections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = 'none';
     });
-    container.appendChild(div);
-  });
+
+    const target = document.getElementById(viewId);
+    if (target) target.style.display = 'block';
+
+    const filters = document.getElementById('tvq-filters');
+    if (filters) {
+        filters.style.display = (viewId === 'mainContent' || viewId === 'searchSection') ? 'flex' : 'none';
+    }
+
+    // Handle view-specific initialization
+    if (viewId === 'mainContent') {
+        if (window.tvq_settings.trending_enabled) {
+            loadTrending();
+        } else {
+            const trend = document.getElementById('trendingSection');
+            if (trend) trend.style.display = 'none';
+        }
+        loadMainGrid(currentPage, false);
+    } else if (viewId === 'showDetails' && params.id) {
+        if (typeof fetchShowDetails === 'function') fetchShowDetails(params.id);
+    } else if (viewId === 'movieDetails' && params.id) {
+        if (typeof fetchMovieDetails === 'function') fetchMovieDetails(params.id);
+    } else if (viewId === 'calendarView') {
+        if (typeof renderCalendar === 'function') renderCalendar();
+    } else if (viewId === 'favouritesView') {
+        if (typeof renderFavourites === 'function') renderFavourites();
+    } else if (viewId === 'watchlistView') {
+        if (typeof renderWatchlist === 'function') renderWatchlist();
+    } else if (viewId === 'watchView' && params.id) {
+        if (typeof startWatch === 'function') startWatch(params.id, params.type, params.s || 1, params.e || 1);
+    }
+}
+
+// --- Discovery Logic ---
+
+function renderGrid(items, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+
+    items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'show-card'; // Consistent class name
+        const title = item.name || item.title;
+        const date = item.first_air_date || item.release_date || '';
+        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w200${item.poster_path}` : 'https://placehold.co/200x300?text=No+Image';
+
+        div.innerHTML = `
+            <div class="card-inner">
+                <img src="${poster}" alt="${title}" loading="lazy" />
+                <div class="card-info">
+                    <h3>${title}</h3>
+                    <p>⭐ ${item.vote_average || 'N/A'}</p>
+                    <small>${date.split('-')[0]}</small>
+                </div>
+            </div>
+        `;
+        div.addEventListener('click', () => {
+            if (currentMediaType === 'tv') {
+                showView('showDetails', { id: item.id });
+            } else {
+                showView('movieDetails', { id: item.id });
+            }
+        });
+        container.appendChild(div);
+    });
 }
 
 function loadMainGrid(page = 1, shouldScroll = true) {
-  currentPage = page;
+    currentPage = page;
+    const endpoint = currentMediaType === 'tv' ? '/discover/tv' : '/discover/movie';
 
-  let endpoint = `/discover/tv&page=${page}&sort_by=${currentSort}`;
+    // Hide trending if filtering by country or genre to show pure results
+    const countryFilterContainer = document.getElementById('countryFilter');
+    const hasCountryFilter = countryFilterContainer && Array.from(countryFilterContainer.querySelectorAll('input:checked')).some(i => i.value !== '');
+    const hasGenreFilter = !!currentGenre;
+    const trend = document.getElementById('trendingSection');
+    if (trend) {
+        if (hasCountryFilter || hasGenreFilter || currentPage > 1 || !!document.getElementById('searchInput').value) {
+            trend.style.display = 'none';
+        } else if (window.tvq_settings.trending_enabled) {
+            trend.style.display = 'block';
+        }
+    }
 
-  // If sorting by rating, require votes
-  if (currentSort === 'vote_average.desc') {
-    endpoint += `&vote_count.gte=200`;
-  }
+    let params = {
+        page: page,
+        sort_by: currentSort
+    };
 
-  // Language filter
-  const englishOnly = document.getElementById('englishOnly');
-  if (englishOnly && englishOnly.checked) {
-      endpoint += '&with_original_language=en';
-  }
+    if (currentSort === 'vote_average.desc') {
+        params['vote_count.gte'] = 200;
+    }
 
-  if (currentGenre) {
-    endpoint += `&with_genres=${currentGenre}`;
-  }
+    const englishOnly = document.getElementById('englishOnly');
+    if (englishOnly && englishOnly.checked) {
+        params['with_original_language'] = 'en';
+    } else {
+        params['with_original_language'] = tvq_settings.default_lang || '';
+    }
 
-  // Country filter
-  const countryOpts = document.querySelectorAll('.country-opt:checked');
-  if (countryOpts.length > 0) {
-      const countries = Array.from(countryOpts).map(opt => opt.value).join('|');
-      endpoint += `&with_origin_country=${countries}`;
-  }
+    if (currentGenre) {
+        params['with_genres'] = currentGenre;
+    }
 
-  fetch(`api/tmdb.php?endpoint=${endpoint}`)
-    .then(res => res.json())
-    .then(data => {
-      renderGrid(data.results || [], 'mainGrid');
-      updatePagination(data.page, data.total_pages);
+    const countryLabel = document.querySelector('#countryDropdown .dropdown-multi-label');
 
-      if (shouldScroll) {
-          document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth' });
-      }
-    })
-    .catch(err => console.error('Error loading main grid:', err));
+    if (countryFilterContainer) {
+        const selectedBoxes = Array.from(countryFilterContainer.querySelectorAll('input:checked'));
+        const selectedValues = selectedBoxes.map(i => i.value).filter(v => v !== '');
+
+        if (selectedValues.length > 0) {
+            params['with_origin_country'] = selectedValues.join('|');
+            if (countryLabel) {
+                if (selectedValues.length === 1) {
+                    const label = selectedBoxes.find(b => b.value !== '').parentElement.textContent.trim();
+                    countryLabel.textContent = label;
+                } else {
+                    countryLabel.textContent = `${selectedValues.length} Countries`;
+                }
+            }
+        } else {
+            if (countryLabel) countryLabel.textContent = 'All Countries';
+            // If nothing selected, check if we have a default to apply
+            if (window.tvq_settings.default_country) {
+                params['with_origin_country'] = window.tvq_settings.default_country;
+            }
+        }
+    }
+
+    tmdbFetch(endpoint, params)
+        .then(data => {
+            renderGrid(data.results || [], 'mainGrid');
+            updatePagination(data.page, data.total_pages);
+            if (shouldScroll) {
+                document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth' });
+            }
+        })
+        .catch(err => console.error('Error loading main grid:', err));
+}
+
+function loadTrending() {
+    const trendSection = document.getElementById('trendingSection');
+    const trendGrid = document.getElementById('trendingGrid');
+    const trendTitle = document.getElementById('trendingTitle');
+
+    if (!trendSection || !trendGrid) return;
+
+    let endpoint = '';
+    const type = window.tvq_settings.trending_type || 'trending';
+    const media = currentMediaType; // 'tv' or 'movie'
+
+    if (type === 'trending') {
+        endpoint = `/trending/${media}/day`;
+        trendTitle.textContent = `Trending ${media === 'tv' ? 'Shows' : 'Movies'}`;
+    } else if (type === 'top_rated') {
+        endpoint = `/${media}/top_rated`;
+        trendTitle.textContent = `Top Rated ${media === 'tv' ? 'Shows' : 'Movies'}`;
+    } else {
+        endpoint = media === 'tv' ? '/tv/on_the_air' : '/movie/now_playing';
+        trendTitle.textContent = media === 'tv' ? 'On The Air' : 'Now Playing';
+    }
+
+    tmdbFetch(endpoint).then(data => {
+        trendSection.style.display = 'block';
+        renderGrid(data.results ? data.results.slice(0, 15) : [], 'trendingGrid');
+    }).catch(err => console.error('Trending error:', err));
 }
 
 function updatePagination(current, total) {
@@ -117,117 +222,165 @@ function updatePagination(current, total) {
     }
 }
 
-function searchShows() {
-  const query = document.getElementById('searchInput').value.trim();
-  const searchSection = document.getElementById('searchSection');
-  const mainContent = document.getElementById('mainContent');
+function searchMedia() {
+    const query = document.getElementById('searchInput').value.trim();
+    const searchSection = document.getElementById('searchSection');
+    const mainContent = document.getElementById('mainContent');
 
-  if (!query) {
-    searchSection.style.display = 'none';
-    mainContent.style.display = 'block';
-    return;
-  }
+    if (!query) {
+        searchSection.style.display = 'none';
+        mainContent.style.display = 'block';
+        return;
+    }
 
-  fetch(`api/tmdb.php?endpoint=/search/tv&query=${encodeURIComponent(query)}`)
-    .then(res => res.json())
-    .then(data => {
-      searchSection.style.display = 'block';
-      mainContent.style.display = 'none';
-      renderShows(data.results || [], 'searchResults');
-    })
-    .catch(err => console.error('Search error:', err));
+    const endpoint = currentMediaType === 'tv' ? '/search/tv' : '/search/movie';
+
+    tmdbFetch(endpoint, { query })
+        .then(data => {
+            searchSection.style.display = 'block';
+            mainContent.style.display = 'none';
+            renderGrid(data.results || [], 'searchResults');
+        })
+        .catch(err => console.error('Search error:', err));
 }
 
-function renderMovies(movies, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-
-  movies.slice(0, 12).forEach(movie => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title}" />
-      <h3>${movie.title}</h3>
-      <p>📅 ${movie.release_date || 'Unknown'}</p>
-    `;
-    div.addEventListener('click', () => {
-      window.location.href = `movie.php?id=${movie.id}`;
-    });
-    container.appendChild(div);
-  });
-
-  if (typeof addScrollArrows === 'function') {
-    addScrollArrows(container);
-  }
-}
+// --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
-  const mainGrid = document.getElementById('mainGrid');
-  const sortBy = document.getElementById('sortBy');
+    // Apply grid column setting
+    if (window.tvq_settings.grid_cols) {
+        document.documentElement.style.setProperty('--tvq-grid-cols', window.tvq_settings.grid_cols);
+    }
 
-  if (sortBy) {
-    currentSort = sortBy.value; // Read dropdown value on first load
+    // Apply Admin Defaults
+    if (window.tvq_settings.default_sort) {
+        currentSort = window.tvq_settings.default_sort;
+        const sortEl = document.getElementById('sortBy');
+        if (sortEl) sortEl.value = currentSort;
+    }
 
-    sortBy.addEventListener('change', (e) => {
-      currentSort = e.target.value;
-      loadMainGrid(1, false);
+    const engEl = document.getElementById('englishOnly');
+    if (engEl) engEl.checked = window.tvq_settings.english_only;
+
+    const countryFilter = document.getElementById('countryFilter');
+    if (countryFilter && window.tvq_settings.default_country) {
+        const defaults = window.tvq_settings.default_country.split('|');
+        let hasDefaults = false;
+        countryFilter.querySelectorAll('input').forEach(i => {
+            if (i.value !== '' && defaults.includes(i.value)) {
+                i.checked = true;
+                hasDefaults = true;
+            }
+        });
+        if (hasDefaults) {
+            const allBox = countryFilter.querySelector('input[value=""]');
+            if (allBox) allBox.checked = false;
+        }
+    }
+    // Navigation Links
+    document.querySelectorAll('.tvq-nav a[data-view]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = e.target.closest('a').dataset.view;
+
+            if (view === 'movies') {
+                currentMediaType = 'movie';
+                currentGenre = '';
+                document.getElementById('gridTitle').textContent = 'Popular Movies';
+                loadMainGrid(1, true);
+                showView('mainContent');
+            } else if (view === 'home') {
+                currentMediaType = 'tv';
+                currentGenre = '';
+                document.getElementById('gridTitle').textContent = 'Popular Shows';
+                loadMainGrid(1, true);
+                showView('mainContent');
+            } else if (view === 'profile') {
+                window.location.href = window.tvq_settings.profile_url;
+            } else {
+                showView(view + 'View');
+            }
+        });
     });
-  }
 
-  if (mainGrid) {
-    loadMainGrid(1, false);
-  }
+    // Filters
+    const sortBy = document.getElementById('sortBy');
+    if (sortBy) {
+        sortBy.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            loadMainGrid(1, false);
+        });
+    }
 
-  const englishOnly = document.getElementById('englishOnly');
-  if (englishOnly) {
-      englishOnly.addEventListener('change', () => {
-          loadMainGrid(1, false);
-      });
-  }
+    const englishOnly = document.getElementById('englishOnly');
+    if (englishOnly) {
+        englishOnly.addEventListener('change', () => loadMainGrid(1, false));
+    }
 
-  const countryOpts = document.querySelectorAll('.country-opt');
-  countryOpts.forEach(opt => {
-      opt.addEventListener('change', () => {
-          loadMainGrid(1, false);
-      });
-  });
+    const countryFilterContainer = document.getElementById('countryFilter');
+    if (countryFilterContainer) {
+        countryFilterContainer.addEventListener('change', (e) => {
+            const boxes = countryFilterContainer.querySelectorAll('input');
+            const clicked = e.target;
 
-  const genreItems = document.querySelectorAll('.genre-item');
-  genreItems.forEach(item => {
-    item.addEventListener('click', () => {
-      genreItems.forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-      currentGenre = item.dataset.id;
-      loadMainGrid(1, false);
+            if (clicked.value === '') { // All selected
+                if (clicked.checked) boxes.forEach(b => { if(b !== clicked) b.checked = false; });
+            } else { // Specific country selected
+                if (clicked.checked) countryFilterContainer.querySelector('input[value=""]').checked = false;
+            }
 
-      const gridTitle = document.getElementById('gridTitle');
-      if (gridTitle) {
-          gridTitle.textContent = currentGenre ? `${item.textContent} Shows` : 'Popular Shows';
-      }
-    });
-  });
+            // If none checked, re-check All
+            if (Array.from(boxes).filter(b => b.checked).length === 0) {
+                countryFilterContainer.querySelector('input[value=""]').checked = true;
+            }
 
-  const prevBtn = document.getElementById('prevPage');
-  const nextBtn = document.getElementById('nextPage');
+            loadMainGrid(1, false);
+        });
+    }
 
-  if (prevBtn && mainGrid) {
-    prevBtn.addEventListener('click', () => {
-      if (currentPage > 1) loadMainGrid(currentPage - 1);
-    });
-  }
+    const genreSelect = document.getElementById('genreSelect');
+    if (genreSelect) {
+        genreSelect.addEventListener('change', (e) => {
+            currentGenre = e.target.value;
+            loadMainGrid(1, false);
 
-  if (nextBtn && mainGrid) {
-    nextBtn.addEventListener('click', () => {
-      loadMainGrid(currentPage + 1);
-    });
-  }
+            const gridTitle = document.getElementById('gridTitle');
+            if (gridTitle) {
+                const typeLabel = currentMediaType === 'tv' ? 'Shows' : 'Movies';
+                const genreLabel = e.target.options[e.target.selectedIndex].text;
+                gridTitle.textContent = currentGenre ? `${genreLabel} ${typeLabel}` : `Popular ${typeLabel}`;
+            }
+        });
+    }
 
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      clearTimeout(window.searchTimeout);
-      window.searchTimeout = setTimeout(searchShows, 400);
-    });
-  }
+    // Pagination
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    if (prevBtn) prevBtn.addEventListener('click', () => { if (currentPage > 1) loadMainGrid(currentPage - 1); });
+    if (nextBtn) nextBtn.addEventListener('click', () => loadMainGrid(currentPage + 1));
+
+    // Search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(searchMedia, 400);
+        });
+    }
+
+    // Initial Load
+    const hash = window.location.hash;
+    if (hash.startsWith('#view=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const view = params.get('view');
+        const id = params.get('id');
+        if (view === 'show') showView('showDetails', { id });
+        else if (view === 'movie') showView('movieDetails', { id });
+    } else {
+        if (tvq_settings.default_view === 'movies') {
+            currentMediaType = 'movie';
+            document.getElementById('gridTitle').textContent = 'Popular Movies';
+        }
+        showView('mainContent');
+    }
 });

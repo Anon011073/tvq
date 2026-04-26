@@ -1,120 +1,67 @@
-document.addEventListener('DOMContentLoaded', () => {
-  loadCalendar();
-});
+/**
+ * js/calendar.js - Upcoming Episodes View
+ */
 
-function loadCalendar() {
-  const favs = JSON.parse(localStorage.getItem(getUserKey('favs')) || '[]');
-  const container = document.getElementById('calendarContainer');
-  container.innerHTML = '<p>📡 Loading upcoming episodes...</p>';
+async function renderCalendar() {
+    const container = document.getElementById('calendarView');
+    container.innerHTML = '<h2>📅 TV Episode Calendar</h2><p class="loading">Fetching schedule for your watchlist...</p>';
 
-  const promises = favs.map(show =>
-    fetch(`api/tmdb.php?endpoint=/tv/${show.id}`)
-      .then(res => res.json())
-      .then(data => {
+    const watchlist = await getUserData('watchlist');
+    const shows = watchlist.filter(item => item.type === 'tv');
 
-        const today = new Date();
-        const threeDaysAgo = new Date();
-        threeDaysAgo.setDate(today.getDate() - 3);
+    if (shows.length === 0) {
+        container.innerHTML = '<h2>📅 TV Episode Calendar</h2><p class="empty-msg">Add TV shows to your watchlist to see your personalized calendar.</p>';
+        return;
+    }
 
-        const results = [];
+    // Prepare Calendar Grid
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-        // check last aired episode
-        if (data.last_episode_to_air) {
-          const last = data.last_episode_to_air;
-          const airDate = new Date(last.air_date);
+    const days = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-          if (airDate >= threeDaysAgo && airDate <= today) {
-            results.push({
-              name: show.name,
-              episode: `S${last.season_number}E${last.episode_number} - ${last.name}`,
-              air_date: last.air_date,
-              showId: show.id
-            });
-          }
-        }
-
-        // next episode
-        if (data.next_episode_to_air) {
-          const next = data.next_episode_to_air;
-
-          results.push({
-            name: show.name,
-            episode: `S${next.season_number}E${next.episode_number} - ${next.name}`,
-            air_date: next.air_date,
-            showId: show.id
-          });
-        }
-
-        return results;
-      })
-  );
-
-  Promise.all(promises).then(episodes => {
-    const filtered = episodes.flat().filter(e => e);
-    renderCalendar(filtered);
-  });
-}
-
-function renderCalendar(episodes) {
-  const container = document.getElementById('calendarContainer');
-  if (!episodes.length) {
-    container.innerHTML = '<p>No upcoming episodes found for your tracked shows.</p>';
-    return;
-  }
-
-  const eventsByDate = {};
-  episodes.forEach(ep => {
-    if (!eventsByDate[ep.air_date]) eventsByDate[ep.air_date] = [];
-    eventsByDate[ep.air_date].push(ep);
-  });
-
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth();
-
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const numDays = lastDay.getDate();
-  const startDay = (firstDay.getDay() + 6) % 7;
-
-  const monthName = firstDay.toLocaleString('default', { month: 'long' });
-
-  let html = `<h2>${monthName} ${year}</h2>`;
-  html += '<div class="calendar-grid-view">';
-
-  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  weekdays.forEach(day => {
-    html += `<div class="calendar-header">${day}</div>`;
-  });
-
-  for (let i = 0; i < startDay; i++) {
-    html += `<div class="calendar-day empty"></div>`;
-  }
-
-  for (let d = 1; d <= numDays; d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const eps = eventsByDate[dateStr] || [];
-
-    let inner = `<strong>${d}</strong>`;
-    eps.forEach(ep => {
-      inner += `
-        <div class="ep-tile">
-          <a href="show.php?id=${ep.showId}">
-            ${ep.name}<br><small>${ep.episode}</small>
-          </a>
+    container.innerHTML = `
+        <h2>📅 7-Day TV Calendar</h2>
+        <div class="calendar-grid-view">
+            ${Array.from({length: 7}).map((_, i) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                days.push(dateStr);
+                return `
+                    <div class="calendar-column">
+                        <div class="calendar-header">${dayNames[d.getDay()]}<br><small>${d.getDate()}</small></div>
+                        <div id="day-${dateStr}" class="calendar-day"></div>
+                    </div>
+                `;
+            }).join('')}
         </div>
-      `;
+    `;
+
+    // Fetch and Populate
+    shows.forEach(show => {
+        tmdbFetch(`/tv/${show.id}`).then(details => {
+            if (details.next_episode_to_air) {
+                const ep = details.next_episode_to_air;
+                const airDate = ep.air_date;
+                const dayEl = document.getElementById(`day-${airDate}`);
+                if (dayEl) {
+                    dayEl.classList.add('has-ep');
+                    const item = document.createElement('div');
+                    item.className = 'cal-item';
+                    item.style.cursor = 'pointer';
+                    item.style.background = '#ff5e57';
+                    item.style.color = '#fff';
+                    item.style.padding = '5px';
+                    item.style.borderRadius = '4px';
+                    item.style.marginBottom = '5px';
+                    item.style.fontSize = '0.75rem';
+                    item.innerHTML = `<strong>${details.name}</strong><br>S${ep.season_number}E${ep.episode_number}`;
+                    item.onclick = () => showView('showDetails', {id: details.id});
+                    dayEl.appendChild(item);
+                }
+            }
+        });
     });
-
-    html += `<div class="calendar-day ${eps.length ? 'has-ep' : ''}">${inner}</div>`;
-  }
-
-  const totalCells = startDay + numDays;
-  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-  for (let i = 0; i < remaining; i++) {
-    html += `<div class="calendar-day empty"></div>`;
-  }
-
-  html += '</div>';
-  container.innerHTML = html;
 }

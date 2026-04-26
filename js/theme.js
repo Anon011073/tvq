@@ -1,17 +1,18 @@
 // js/theme.js
 
+/**
+ * js/theme.js - Global Theme Logic
+ */
 document.addEventListener('DOMContentLoaded', () => {
-  const toggleBtn = document.getElementById('themeToggle');
-  const savedTheme = localStorage.getItem(getUserKey('theme')) || 'dark';
-  document.body.classList.add(savedTheme + '-mode');
+    const container = document.querySelector('.tvq-tracker-container');
 
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const isDark = document.body.classList.contains('dark-mode');
-      document.body.classList.remove(isDark ? 'dark-mode' : 'light-mode');
-      document.body.classList.add(isDark ? 'light-mode' : 'dark-mode');
-      localStorage.setItem(getUserKey('theme'), isDark ? 'light' : 'dark');
-    });
-  }
+    function applyTheme(theme) {
+        if (!container) return;
+        container.classList.remove('dark-mode', 'light-mode');
+        container.classList.add(theme + '-mode');
+    }
+
+    // Strictly follow global admin setting
+    const globalTheme = window.tvq_settings.global_theme || 'dark';
+    applyTheme(globalTheme);
 });
-// TV Tracker Theme Logic
